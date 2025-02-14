@@ -1,0 +1,15 @@
+# Private files
+**/_private/**
+!**/_private/**/.gitkeep
+
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+.mypy_cache/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv

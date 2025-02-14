@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app", "config", "scripts", "src", "tests"]
+
+[tool.mypy]
+warn_unused_ignores = true
+ignore_missing_imports = true
+warn_unused_configs = true
+disallow_any_generics = true
+disallow_subclassing_any = true
+
