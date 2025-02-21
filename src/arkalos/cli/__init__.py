@@ -8,7 +8,8 @@ YELLOW = '\033[33m'
 BLUE = '\033[34m'
 
 ENABLED_COMMANDS = {
-    'init': 'Init the Arkalos starter project with the base folder structure and configuration.'
+    'init': 'Init the Arkalos starter project with the base folder structure and configuration.',
+    'serve': 'Start Arkalos HTTP API Server.'
 }
 
 def show_help():
@@ -16,7 +17,7 @@ def show_help():
     print(BLUE + 'Arkalos')
     print('The Python Framework for AI & Data Artisans')
     print('Copyright (c) 2025 Mev-Rael')
-    print('v0.1.0')
+    print('v0.2.0 (Beta 2)')
     print()
     print("Available commands:" + RESET)
     for command in ENABLED_COMMANDS:

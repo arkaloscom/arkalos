@@ -61,9 +61,10 @@ class DataWarehouse(ABC):
 
 
     def disconnect(self):
-        self._connection.close()
-        self._connection = None
-        self._cursor = None
+        if (self._connection is not None):
+            self._connection.close()
+            self._connection = None
+            self._cursor = None
 
 
     def mapInt(self, polars_data_type: pl.Struct):

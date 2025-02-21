@@ -1,19 +1,14 @@
 import polars as pl
 
 from arkalos import dwh
-from arkalos.ai import AITask
+from arkalos.ai import AIAction
 
 
 
-class SearchDWHTask(AITask):
+class SearchDWHAction(AIAction):
 
-    @property
-    def NAME(self):
-        return 'search_dwh'
-    
-    @property
-    def DESCRIPTION(self):
-        return 'Search an SQL data warehouse by running SELECT queries and returning a DataFrame.'
+    NAME = 'search_dwh'
+    DESCRIPTION = 'Search an SQL data warehouse by running SELECT queries and returning a DataFrame.'
     
     def getDataFromDWH(self, sql: str) -> tuple:
         results = dwh().selectQuery(sql)

@@ -1,19 +1,14 @@
 import re
 
 from arkalos import dwh
-from arkalos.ai import AITask
+from arkalos.ai import AIAction
 
 
 
-class TextToSQLTask(AITask):
+class TextToSQLAction(AIAction):
 
-    @property
-    def NAME(self):
-        return 'text_to_sql'
-    
-    @property
-    def DESCRIPTION(self):
-        return 'Transforms a natural language input into an SQL statement based on a data warehouse schema.'
+    NAME = 'text_to_sql'
+    DESCRIPTION = 'Transforms a natural language input into an SQL statement based on a data warehouse schema.'
 
     def extractSQLFromMessage(self, message: str) -> str:
         pattern = r'```(?:sql)?\s*(.*?)\s*```'

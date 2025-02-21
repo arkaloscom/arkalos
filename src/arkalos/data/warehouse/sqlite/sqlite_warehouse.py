@@ -24,8 +24,9 @@ class SQLiteWarehouse(DataWarehouse):
         return 'SQLite'
 
     def connect(self):
-        self._connection = sqlite3.connect(self.__path)
-        self._cursor = self._connection.cursor()
+        if (self._connection is None):
+            self._connection = sqlite3.connect(self.__path)
+            self._cursor = self._connection.cursor()
 
     def generateCreateSchemaQuery(self, extractor: DataExtractor, table_name: str, data_schema: dict) -> str:
         columns = []

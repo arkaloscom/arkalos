@@ -1,33 +1,30 @@
 
-from arkalos.ai import AITask
+from arkalos.ai import AIAction
 
 
 
-class WhichTask(AITask):
+class WhichAction(AIAction):
 
-    _tasks: dict[str, AITask]
+    _actions: dict[str, AIAction]
 
-    @property
-    def NAME(self):
-        return 'which_task'
-    
-    @property
-    def DESCRIPTION(self):
-        return 'Understand the intent and which task from the available list fits the prompt'
+    NAME = 'which_action'
+    DESCRIPTION = 'Understand the intent and which action (task) from the available list fits the prompt'
 
 
-    def __init__(self, tasks: dict[str, AITask]):
-        self._tasks = tasks
+
+    def __init__(self, actions: dict[str, AIAction]):
+        self._actions = actions
 
 
-    def buildTaskListForPrompt(self):
+
+    def buildActionListForPrompt(self):
         task_list = ''
-        for task_key in self._tasks:
-            task_list = task_list + task_key + ': ' + self._tasks[task_key].DESCRIPTION + '\n'
+        for task_key in self._actions:
+            task_list = task_list + task_key + ': ' + self._actions[task_key].DESCRIPTION + '\n'
         return task_list
 
     def run(self, message) -> str:
-        task_list = self.buildTaskListForPrompt()
+        task_list = self.buildActionListForPrompt()
         prompt = f"""
             ### Instructions:
             Your task is to understand the intent of the input and provide a task name.
