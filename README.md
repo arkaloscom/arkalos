@@ -1,6 +1,4 @@
-
-
-# Arkalos Beta 2 - The Python Framework for AI & Data Artisans
+# Arkalos Beta 3 - The Python Framework for AI & Data Artisans
 
 [![PyPI version](https://img.shields.io/pypi/v/arkalos)](https://pypi.org/project/arkalos/)
 [![PyPI Downloads](https://static.pepy.tech/badge/arkalos)](https://pepy.tech/projects/arkalos)
@@ -22,8 +20,6 @@ Git: [https://github.com/arkaloscom/arkalos](https://github.com/arkaloscom/arkal
 </div>
 
 </div>
-
-
 
 ## Why Arkalos? Beginner- and Micro Business-Friendly
 
@@ -47,10 +43,7 @@ No more struggling with:
 
 The name Arkalos combines "Arc" and the Greek word "Kalos," meaning "a beautiful journey through the data."
 
-
 <img src="https://arkalos.com/assets/img/arkalos-ai-web.png" alt="Arkalos Web UI">
-
-
 
 ## Beautiful Syntax and Documentation
 
@@ -60,7 +53,6 @@ Arkalos offers:
 * Elegant Syntax: Simple code that's easy to write and read.
 * Reliable Performance: Works out of the box with minimal setup.
 
-
 ```bash
 uv init
 uv add arkalos
@@ -69,36 +61,22 @@ uv run arkalos init
 # That's it. Your workspace is ready to write code. It just works!
 ```
 
-
 ## Key Features
 
-* **🚀 Modern Python Workflow:**<br> Built with modern Python practices, libraries, and a package manager. Perfect for non-coders and AI engineers.
-
-* **🛠️ Hassle-Free Setup:**<br> No more struggling with environment setups, package installs, or import errors.
-
-* **🤝 Easy Collaboration & Folder Structure:**<br> Share code across devices or with your team. Built-in workspace folder and file structure. Know where to put each file.
-
-* **📓 Jupyter Notebook Friendly:**<br> Start with a simple notebook and easily transition to scripts, full apps, or microservices.
-
-* **📊 Built-in Data Warehouse:**<br> Connect to Notion, Airtable, Google Drive, and more. Uses SQLite for a local, lightweight data warehouse.
-
-* **🤖 AI, LLM & RAG Ready. Talk to Your Own Data:**<br> Train AI models, run LLMs, and build AI and RAG pipelines locally. Fully open-source and compliant. Built-in AI agent helps you to talk to your own data in natural language.
-
-* **🐞 Debugging and Logging Made Easy:**<br> Built-in utilities and Python extensions like `var_dump()` for quick variable inspection, `dd()` to halt code execution, and pre-configured logging for notices and errors.
-
-* **🧩 Extensible Architecture:**<br> Easily extend Arkalos components and inject your own dependencies with a modern, modular software design.
-
-* **🔗 Seamless Microservices:**<br> Deploy your own data or AI microservice like ChatGPT without the need to use external APIs to integrate with your existing platforms effortlessly.
-
-* **🔒 Data Privacy & Compliance First:**<br> Run everything locally with full control. No need to send sensitive data to third parties. Fully open-source under the MIT license, and perfect for organizations needing data governance.
-
-
+* **🚀 Modern Python Workflow:**`<br>` Built with modern Python practices, libraries, and a package manager. Perfect for non-coders and AI engineers.
+* **🛠️ Hassle-Free Setup:**`<br>` No more struggling with environment setups, package installs, or import errors.
+* **🤝 Easy Collaboration & Folder Structure:**`<br>` Share code across devices or with your team. Built-in workspace folder and file structure. Know where to put each file.
+* **📓 Jupyter Notebook Friendly:**`<br>` Start with a simple notebook and easily transition to scripts, full apps, or microservices.
+* **📊 Built-in Data Warehouse:**`<br>` Connect to Notion, Airtable, Google Drive, and more. Uses SQLite for a local, lightweight data warehouse.
+* **🤖 AI, LLM & RAG Ready. Talk to Your Own Data:**`<br>` Train AI models, run LLMs, and build AI and RAG pipelines locally. Fully open-source and compliant. Built-in AI agent helps you to talk to your own data in natural language.
+* **🐞 Debugging and Logging Made Easy:**`<br>` Built-in utilities and Python extensions like `var_dump()` for quick variable inspection, `dd()` to halt code execution, and pre-configured logging for notices and errors.
+* **🧩 Extensible Architecture:**`<br>` Easily extend Arkalos components and inject your own dependencies with a modern, modular software design.
+* **🔗 Seamless Microservices:**`<br>` Deploy your own data or AI microservice like ChatGPT without the need to use external APIs to integrate with your existing platforms effortlessly.
+* **🔒 Data Privacy & Compliance First:**`<br>` Run everything locally with full control. No need to send sensitive data to third parties. Fully open-source under the MIT license, and perfect for organizations needing data governance.
 
 ## Truly Open-Source, Local, and Compliant
 
 Arkalos helps individuals and businesses analyze data securely, with everything running locally and fully compliant with regulations.
-
-
 
 ## Free Built-In Data Warehouse and Integrations
 
@@ -113,7 +91,8 @@ Automatically detects and generates the schema.
 And syncs data into your own data warehouse.
 
 config/data_sources.py
-```python title="config/data_sources.py"
+
+```python
     'airtable': {
         'enabled': True,
         'api_key': env('AIRTABLE_API_KEY'),
@@ -125,7 +104,8 @@ config/data_sources.py
 SQLite is used as the default local data warehouse.
 
 .env
-```ini title=".env"
+
+```ini
 DWH_ENGINE=SQLite
 DWH_SCHEMA_PATH=data/dwh/schema.sql
 DWH_SQLITE_PATH=data/dwh/dwh.db
@@ -136,6 +116,7 @@ uv run arkalos dwh sync
 ```
 
 scripts/etl/my_script.py
+
 ```python
 from arkalos.data.extractors.airtable_extractor import AirtableExtractor
 # or for Notion
@@ -148,9 +129,6 @@ wf.run(drop_tables=True)
 
 And that's it! Your data is imported automatically, ready for analysis or AI pipelines, and even accessible offline.
 
-
-
-
 ## Built-in HTTP API Server - Launch a Python Data or AI Microservice
 
 Python is the world's fastest-growing programming language thanks to its rich ecosystem of data, AI, and scientific libraries.
@@ -161,11 +139,10 @@ Arkalos lets freelancers, consultants, startups, businesses, and even government
 uv run arkalos serve
 ```
 
-
-
 ## Build Custom AI Agents Without Abstraction
 
 app/ai/actions/what_is_my_ip_action.py
+
 ```python
 import socket
 from arkalos.ai import AIAction
@@ -174,7 +151,7 @@ class WhatIsMyIpAction(AIAction):
 
     NAME = 'what_is_my_ip'
     DESCRIPTION = 'Determine the user IP'
-    
+  
     def run(self, message):
         hostname = socket.gethostname()
         ip = socket.gethostbyname(hostname)
@@ -182,6 +159,7 @@ class WhatIsMyIpAction(AIAction):
 ```
 
 app/ai/actions/calc_action.py
+
 ```python
 from arkalos.ai import AIAction
 
@@ -189,7 +167,7 @@ class CalcAction(AIAction):
 
     NAME = 'calc'
     DESCRIPTION = 'Calculate mathematical expressions and provide a single value'
-    
+  
     def run(self, message):
         prompt = f"""
             ### Instructions:
@@ -199,17 +177,17 @@ class CalcAction(AIAction):
             Generate a proper mathematical formula based on this question `{message}`.
 
             And calculate the final answer to this formula.
-                    
+                  
             ### Response:
             Respond as a single mathematical value to the expression
         """
         return self.generateTextResponse(prompt)
 ```
 
-
 ## Multi-Task Agent - Determine Which Action to Take
 
 app/ai/agents/multi_agent.py
+
 ```python
 from arkalos.ai import AIAgent, TextToSQLAction
 
@@ -218,13 +196,13 @@ from app.ai.actions import WhatIsMyIpAction, CalcAction
 
 
 class MultiAgent(AIAgent):
-    
+  
     NAME = 'MultiAgent'
 
     DESCRIPTION = 'An Agent that understands the intent, determines which task to perform and runs it.'
 
     GREETING = 'Hi, I am a MultiAgent. I can tell your IP address, do basic math calculations or transform text to SQL.'
-    
+  
     ACTIONS = [
         WhatIsMyIpAction, 
         CalcAction, 
@@ -246,6 +224,7 @@ class MultiAgent(AIAgent):
 ## Test Your Models and Agents Locally
 
 scripts/ai/agent.py
+
 ```python
 from app.ai.agents import MultiAgent
 
@@ -258,18 +237,105 @@ uv run scripts/ai/agent.py
 ```
 
 
+## Powerful Google Extractor
+
+### Search and List Google Drive Files, Spreadsheets and Forms
+
+```python
+import polars as pl
+
+from arkalos.utils import MimeType
+from arkalos.data.extractors import GoogleExtractor
+
+google = GoogleExtractor()
+
+folder_id = 'folder_id'
+
+# List files and their metadata in a Google Drive folder
+files = google.drive.listFiles(folder_id)
+
+# Search for files with regex and by type
+files = google.drive.listFiles(folder_id, name_pattern='report', file_types=[MimeType.DOC_PDF])
+
+print(pl.DataFrame(files))
+```
+
+### List All the Spreadsheets Recursively With Their Tabs (Sheets) Info
+
+```python
+files = google.drive.listSpreadsheets(folder_id, name_pattern='report', recursive_depth=1, with_meta=True, do_print=True)
+
+for file in files:
+    google.drive.downloadFile(file['id'], do_print=True)
+```
+
+### Download, Export Files and Spreadsheets or Google Form Responses
+
+```python
+google.drive.getFormMetadata(form_id)
+
+google.drive.getFormResponses(form_id)
+
+google.drive.getFormQuestions(form_id)
+
+# Export Google Form responses as CSV
+google.drive.downloadFile(form_id)
+
+# Export Google Spreadsheet as LibreOffice Calc
+google.drive.downloadFile(spreadsheet_id, 'my_folder/spreadsheet_name', as_mime_type=MimeType.SHEET_LIBRE_CALC)
+```
+
+### Get Data from Google Analytics 4
+
+```python
+# Past 28 days (minus 2 days of delay)
+start_date = (datetime.now() - timedelta(days=29)).strftime('%Y-%m-%d')
+end_date = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
+
+props = google.analytics.listProperties()
+
+property_id = 'property_id'
+
+google.analytics.fetchPages(property_id, start_date, end_date)
+
+google.analytics.fetchTrafficStats(property_id, start_date, end_date)
+
+google.analytics.fetchInternalSiteSearch(property_id, start_date, end_date)
+```
+
+### And From Google Search Console (GSC)
+
+```python
+google.analytics.listGSCSites()
+
+site = 'sc-domain:arkalos.com'
+
+google.analytics.fetchTopGSCPages(site, start_date, end_date)
+
+queries = google.analytics.fetchTopGSCQueries(site, start_date, end_date)
+
+# Sort by a built-in CTR Opportunity Score
+pl.Config(tbl_rows=100)
+pl.DataFrame(queries).select(pl.exclude('site', 'page_url', 'page_path')).sort('ctr_os', descending=True)
+
+# Fetch top pages first and then their top queries (Page-first)
+google.analytics.fetchTopGSCPagesThenQueries(site, start_date, end_date)
+
+# Query-first
+google.analytics.fetchTopGSCQueriesThenPages(site, start_date, end_date)
+
+# Or as sections, instead of a single table
+google.analytics.fetchTopGSCPagesThenQueries(site, start_date, end_date, with_sections=True)
+```
+
 
 ## Beautiful Documentation - Get Started Today
 
 Read the [Documentation](https://arkalos.com)
 
-
-
 ## Appreciations
 
 We are grateful to the communities behind [these open-source projects on which we depend](https://arkalos.com/appreciations).
-
-
 
 ## License
 
