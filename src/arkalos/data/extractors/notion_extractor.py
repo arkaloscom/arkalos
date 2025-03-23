@@ -1,8 +1,8 @@
+
 from dataclasses import dataclass
 import requests
-import json
 
-from pyairtable import Api
+
 
 from arkalos import config
 from arkalos.data.extractors.data_extractor import DataExtractor

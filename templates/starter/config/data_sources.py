@@ -10,6 +10,7 @@ config = {
 
     'google': {
         'enabled': False,
+        'oauth_key_path': env('GOOGLE_OAUTH_KEY_PATH'),
         'service_account_key_path': env('GOOGLE_SERVICE_ACCOUNT_KEY_PATH'),
         'spreadsheets': env('GOOGLE_SPREADSHEETS'),
         'id_col': 'id',

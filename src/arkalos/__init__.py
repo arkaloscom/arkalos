@@ -2,7 +2,7 @@
 from arkalos.core.registry import Registry
 from arkalos.core.bootstrap import bootstrap
 from arkalos.core.env import env
-from arkalos.core.path import base_path
+from arkalos.core.path import base_path, drive_path
 from arkalos.core.config import config
 from arkalos.core.dwh import dwh
 from arkalos.core.http import http_server, router

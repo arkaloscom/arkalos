@@ -1,14 +1,11 @@
-from dataclasses import dataclass
 
-#from pyairtable import Api
+from dataclasses import dataclass
 import requests
 
 from arkalos import config
 from arkalos.data.extractors.data_extractor import DataExtractor
 
-###
-# Airtable Connector, Extractor and Simple Data Transformer
-###
+
 
 @dataclass
 class AirtableConfig:
