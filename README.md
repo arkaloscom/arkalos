@@ -1,4 +1,4 @@
-# Arkalos Beta 3 - The Python Framework for AI & Data Artisans
+# Arkalos Beta 4 - The Python Framework for AI & Data Artisans
 
 [![PyPI version](https://img.shields.io/pypi/v/arkalos)](https://pypi.org/project/arkalos/)
 [![PyPI Downloads](https://static.pepy.tech/badge/arkalos)](https://pepy.tech/projects/arkalos)
@@ -234,6 +234,58 @@ agent.runConsole()
 
 ```bash
 uv run scripts/ai/agent.py
+```
+
+
+## Web Browser Automation, Crawling and Scraping
+
+```python
+from arkalos.browser import WebBrowser, WebBrowserTab
+
+browser = WebBrowser(WebBrowser.TYPE.REMOTE_CDP)
+
+async def search_google(tab: WebBrowserTab):
+    await tab.goto('https://www.google.com')
+    search_input = tab.get_by_role('combobox', name='Search')
+    await search_input.click()
+    await search_input.fill('cats')
+    await search_input.press('Enter')
+    images_tab = tab.get_by_role('link', name='Images', exact=True)
+    await images_tab.click()
+
+await browser.run(search_google)
+```
+
+```python
+from arkalos.data.extractors import WebExtractor, WebDetails, _
+from dataclasses import dataclass
+import polars as pl
+
+@dataclass
+class ArticleDetails(WebDetails):
+    CONTAINER = 'article[data-id]'
+
+    id: _[str, None, 'data-id']           # Attribute from container
+    url: _[str, 'a', 'href']              # Link
+    title: _[str, 'a']                    # Text from <a>
+    description: _[str, '[data-item="description"]']
+    tags: _[list[str], '[data-item="tag"]']
+    rating: _[int, '.rating', 1]          # Second child (after image)
+
+class MyWebsiteWebExtractor(WebExtractor):
+    BASE_URL = 'https://mywebsite.com'
+    PAGE_CONTENT_SELECTOR = 'main'
+    SCROLL = True
+    DETAILS = ArticleDetails
+
+    async def crawlTechArticles(self):
+        return await self.crawlSpecificDetails(['/category/tech'])
+
+mywebsite = MyWebsiteWebExtractor()
+data = await mywebsite.crawlTechArticles()
+
+df = pl.DataFrame(data)
+df
 ```
 
 
