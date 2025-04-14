@@ -1,5 +1,5 @@
 
-from typing import Any, Optional
+from typing import Any
 from abc import ABC, abstractmethod
 import os
 import json
@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 import polars as pl
 
 from arkalos.utils.schema import get_data_schema
-from arkalos.data.extractors.data_extractor import DataExtractor
+from arkalos.data.extractors.data_extractor import TabularDataExtractor
 from arkalos.core.config import config
 
 class DataWarehouse(ABC):
@@ -22,32 +22,30 @@ class DataWarehouse(ABC):
     DTYPE_ARRAY = 'TEXT'
     DTYPE_JSON = 'TEXT'
 
-    _connection: Optional[Any] = None
-    _cursor: Optional[Any] = None
+    _connection: Any|None = None
+    _cursor: Any|None = None
 
-    @property 
-    @abstractmethod
-    def NAME(self) -> str:
-        pass
+    NAME: str
+    DESCRIPTION: str
 
     @abstractmethod
     def connect(self) -> None:
         pass
 
     @abstractmethod
-    def generateCreateSchemaQuery(self, extractor: DataExtractor, table_name: str, data_schema: dict) -> str:
+    def generateCreateSchemaQuery(self, extractor: TabularDataExtractor, table_name: str, data_schema: dict) -> str:
         pass
     
     @abstractmethod
-    def generateDropSchemaQuery(self, extractor: DataExtractor, table_name: str) -> str:
+    def generateDropSchemaQuery(self, extractor: TabularDataExtractor, table_name: str) -> str:
         pass
 
     @abstractmethod
-    def generateInsertQuery(self, serialized_row, extractor: DataExtractor, table_name: str) -> str:
+    def generateInsertQuery(self, serialized_row, extractor: TabularDataExtractor, table_name: str) -> str:
         pass
 
     @abstractmethod
-    def generateUpdateQuery(self, serialized_row, extractor: DataExtractor, table_name: str, id) -> str:
+    def generateUpdateQuery(self, serialized_row, extractor: TabularDataExtractor, table_name: str, id) -> str:
         pass
 
     @abstractmethod
@@ -119,21 +117,15 @@ class DataWarehouse(ABC):
     
     def detectDataSchema(self, data: pl.DataFrame) -> dict:
         return get_data_schema(data)
-    
-
-        
-    def generateTableName(self, extractor: DataExtractor, table_name: str) -> str:
+     
+    def generateTableName(self, extractor: TabularDataExtractor, table_name: str) -> str:
         return extractor.NAME + '__' + table_name
         
-    
-
-
-
-    def dropTable(self, extractor: DataExtractor, table_name: str):
+    def dropTable(self, extractor: TabularDataExtractor, table_name: str):
         drop_table_sql = self.generateDropSchemaQuery(extractor, table_name)
         self.executeQuery(drop_table_sql)
 
-    def createTable(self, extractor: DataExtractor, table_name: str, data_schema: dict):
+    def createTable(self, extractor: TabularDataExtractor, table_name: str, data_schema: dict):
         create_table_sql = self.generateCreateSchemaQuery(extractor, table_name, data_schema)
         self.updateSchemaDefinitions(create_table_sql)
         self.executeQuery(create_table_sql)
@@ -149,16 +141,14 @@ class DataWarehouse(ABC):
     def serializeRow(self, row, data_schema):
         serialized_row = {col: self.serializeValue(row[col], data_schema[col]) for col in row}
         return serialized_row
-    
 
-
-    def importData(self, extractor: DataExtractor, table_name: str, data_schema, data):
+    def importData(self, extractor: TabularDataExtractor, table_name: str, data_schema, data):
         for row in data:
             serialized_row = self.serializeRow(row, data_schema)
             insert_sql = self.generateInsertQuery(serialized_row, extractor, table_name)
             self.executeQuery(insert_sql, list(serialized_row.values()))
 
-    def importUpdatedRow(self, extractor: DataExtractor, table_name: str, data_schema, row, id):
+    def importUpdatedRow(self, extractor: TabularDataExtractor, table_name: str, data_schema, row, id):
         serialized_row = self.serializeRow(row, data_schema)
         update_sql = self.generateUpdateQuery(serialized_row, extractor, table_name, id)
         values = list(serialized_row.values()) + [id]

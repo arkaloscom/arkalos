@@ -2,41 +2,28 @@
 from dataclasses import dataclass
 import requests
 
-
-
 from arkalos import config
-from arkalos.data.extractors.data_extractor import DataExtractor
+from arkalos.data.extractors.data_extractor import TabularDataExtractor, DataExtractorConfig
 
 
-
-###
-# Notion Connector, Extractor and Simple Data Transformer
-###
 
 @dataclass
-class NotionConfig:
+class NotionConfig(DataExtractorConfig):
     API_SECRET: str
 
-class NotionExtractor(DataExtractor):
 
-    @property 
-    def TYPE(self):
-        return self.TYPE_HTTP_REQUEST
 
-    @property
-    def NAME(self):
-        return 'Notion'
+class NotionExtractor(TabularDataExtractor):
 
-    @property 
-    def CONFIG(self): 
-        return NotionConfig(
-            API_SECRET = config('data_sources.notion.api_secret'),
-        )
-    
-    @property 
-    def TABLES(self): 
-        return config('data_sources.notion.databases')
-    
+    NAME = 'Notion'
+    DESCRIPTION = 'Notion data extractor for Notion databases only'
+    CONFIG: NotionConfig
+
+    def __init__(self):
+        self.CONFIG = NotionConfig(API_SECRET=config('data_sources.notion.api_secret'))
+        self.TABLES = config('data_sources.notion.databases')
+
+
 
     def requestPages(self, url_endpoint):
         num_pages = None

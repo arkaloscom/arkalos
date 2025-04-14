@@ -1,7 +1,5 @@
 
-from typing import Optional
-
-from arkalos.data.extractors.data_extractor import DataExtractor
+from arkalos.data.extractors.data_extractor import TabularDataExtractor
 from arkalos.data.warehouse.data_warehouse import DataWarehouse
 from arkalos.core.dwh import dwh
 
@@ -9,14 +7,14 @@ from arkalos.workflows.workflow import Workflow
 
 class ETLWorkflow(Workflow):
 
-    __extractor: DataExtractor
+    __extractor: TabularDataExtractor
     __dwh: DataWarehouse
     __tables: dict
 
     def __init__(
         self, 
-        data_extractor_class: type[DataExtractor], 
-        data_warehouse_class: Optional[type[DataWarehouse]] = None
+        data_extractor_class: type[TabularDataExtractor], 
+        data_warehouse_class: type[DataWarehouse]|None = None
     ):
         self.__extractor = data_extractor_class()
         self.__dwh = data_warehouse_class() if data_warehouse_class is not None else dwh()
@@ -68,7 +66,6 @@ class ETLWorkflow(Workflow):
 
         try:
             self.__runStartMessage()
-            self.__extractor.connect()
             self.__dwh.connect()
             self.__dwh.updateLastSyncDate()
 

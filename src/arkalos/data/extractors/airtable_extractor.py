@@ -3,35 +3,29 @@ from dataclasses import dataclass
 import requests
 
 from arkalos import config
-from arkalos.data.extractors.data_extractor import DataExtractor
+from arkalos.data.extractors.data_extractor import TabularDataExtractor, DataExtractorConfig
 
 
 
 @dataclass
-class AirtableConfig:
+class AirtableConfig(DataExtractorConfig):
     API_KEY: str
     BASE_ID: str
 
-class AirtableExtractor(DataExtractor):
+class AirtableExtractor(TabularDataExtractor):
 
-    @property 
-    def TYPE(self):
-        return self.TYPE_HTTP_REQUEST
+    NAME = 'Airtable'
+    DESCRIPTION = 'Airtable data extractor for Airtable tables'
+    CONFIG: AirtableConfig
 
-    @property
-    def NAME(self):
-        return 'Airtable'
-
-    @property 
-    def CONFIG(self): 
-        return AirtableConfig(
+    def __init__(self):
+        self.CONFIG = AirtableConfig(
             API_KEY = config('data_sources.airtable.api_key'),
-            BASE_ID = config('data_sources.airtable.base_id'),
+            BASE_ID = config('data_sources.airtable.base_id')
         )
-    
-    @property 
-    def TABLES(self): 
-        return config('data_sources.airtable.tables')
+        self.TABLES = config('data_sources.airtable.tables')
+
+
 
     def extractErrorMessage(self, response_json):
         if not isinstance(response_json, dict):

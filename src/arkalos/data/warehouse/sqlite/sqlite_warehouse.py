@@ -1,10 +1,13 @@
 import sqlite3
 
 from arkalos.core.config import config
-from arkalos.data.extractors.data_extractor import DataExtractor
+from arkalos.data.extractors.data_extractor import TabularDataExtractor
 from arkalos.data.warehouse.data_warehouse import DataWarehouse
 
 class SQLiteWarehouse(DataWarehouse):
+
+    NAME = 'SQLite'
+    DESCRIPTION = 'Simple SQLite data warehouse'
 
     DTYPE_INT = 'INTEGER'
     DTYPE_FLOAT = 'REAL'
@@ -19,16 +22,14 @@ class SQLiteWarehouse(DataWarehouse):
     _connection: sqlite3.Connection
     _cursor: sqlite3.Cursor
 
-    @property 
-    def NAME(self):
-        return 'SQLite'
+
 
     def connect(self):
         if (self._connection is None):
             self._connection = sqlite3.connect(self.__path)
             self._cursor = self._connection.cursor()
 
-    def generateCreateSchemaQuery(self, extractor: DataExtractor, table_name: str, data_schema: dict) -> str:
+    def generateCreateSchemaQuery(self, extractor: TabularDataExtractor, table_name: str, data_schema: dict) -> str:
         columns = []
         for column, dtype in data_schema.items():
             sqlite_type = self.mapDataType(dtype)
@@ -36,17 +37,17 @@ class SQLiteWarehouse(DataWarehouse):
         columns_sql = ",\n  ".join(columns)
         return f"CREATE TABLE {self.generateTableName(extractor, table_name)} (\n  {columns_sql}\n);"
     
-    def generateDropSchemaQuery(self, extractor: DataExtractor, table_name: str) -> str:
+    def generateDropSchemaQuery(self, extractor: TabularDataExtractor, table_name: str) -> str:
         drop_table_sql = f"DROP TABLE IF EXISTS {self.generateTableName(extractor, table_name)};"
         return drop_table_sql
 
-    def generateInsertQuery(self, serialized_row, extractor: DataExtractor, table_name: str) -> str:
+    def generateInsertQuery(self, serialized_row, extractor: TabularDataExtractor, table_name: str) -> str:
         columns = ", ".join(f'"{col}"' for col in serialized_row.keys())
         placeholders = ", ".join("?" for _ in serialized_row.values())
         insert_sql = f"INSERT INTO {self.generateTableName(extractor, table_name)} ({columns}) VALUES ({placeholders})"
         return insert_sql   
 
-    def generateUpdateQuery(self, serialized_row, extractor: DataExtractor, table_name: str, id) -> str:
+    def generateUpdateQuery(self, serialized_row, extractor: TabularDataExtractor, table_name: str, id) -> str:
         set_values = ", ".join([f'"{col}" = ?' for col in serialized_row.keys()])
         update_sql = f"UPDATE {self.generateTableName(extractor, table_name)} SET {set_values} WHERE id = ?"
         return update_sql

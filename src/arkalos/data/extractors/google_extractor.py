@@ -5,10 +5,14 @@ from arkalos.services.google_service import GoogleService, GoogleAuthType, Googl
 
 from arkalos.data.extractors.google.google_analytics import GoogleAnalytics
 from arkalos.data.extractors.google.google_drive import GoogleDrive
+from arkalos.data.extractors.data_extractor import UnstructuredDataExtractor
 
 
 
-class GoogleExtractor:
+class GoogleExtractor(UnstructuredDataExtractor):
+
+    NAME = 'GoogleExtractor'
+    DESCRIPTION = 'Google data extractor. Supports Google Drive, Spreadsheets, Forms, Google Analytics 4 and Search Console'
 
     AUTH: Type[GoogleAuthType] = GoogleAuthType
     SCOPE: Type[GoogleScopeType] = GoogleScopeType

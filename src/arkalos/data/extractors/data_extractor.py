@@ -1,32 +1,28 @@
+
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
+
+
+
+@dataclass
+class DataExtractorConfig: 
+    pass
+
+
 
 class DataExtractor(ABC):
-
-    TYPE_CONNECTION = 1
-    TYPE_HTTP_REQUEST = 2
-    TYPE_OTHER = 3
-
-    @property
-    @abstractmethod
-    def TYPE(self) -> int:
-        pass
-
-    @property
-    @abstractmethod
-    def NAME(self) -> str:
-        pass
-
-    @property
-    @abstractmethod
-    def CONFIG(self) -> dict:
-        pass
-
-    @property
-    @abstractmethod
-    def TABLES(self) -> dict:
-        pass
+    NAME: str
+    DESCRIPTION: str
 
 
+
+class UnstructuredDataExtractor(DataExtractor):
+    pass
+
+class TabularDataExtractor(DataExtractor):
+    
+    CONFIG: DataExtractorConfig
+    TABLES: dict
 
     @abstractmethod
     def fetchSchema(self) -> None:
@@ -49,15 +45,6 @@ class DataExtractor(ABC):
         pass
 
 
-
-    def connect(self) -> None:
-        pass
-
-    def disconnect(self) -> None:
-        pass
-
-    def request(self, url_endpoint, params = None) -> None:
-        pass
 
     def transformData(self, data):
         return [self.transformRow(row) for row in data]

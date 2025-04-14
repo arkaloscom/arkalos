@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, cast, Type, Mapping, TypedDict
 import copy
 import re
 
@@ -60,6 +60,9 @@ def sort_by_col(data, columns, descending=False):
 def sort_by_col_desc(data, columns):
     return sort_by_col(data, columns, True)
 
-def filter_by_col(data: list[dict[str, Any]], column: str, pattern: str) -> list[dict[str, Any]]:
+def filter_by_col(data: list, column: str, pattern: str) -> list:
+    '''
+    data must be a dict or TypedDict
+    '''
     regex = re.compile(pattern, re.IGNORECASE)
     return [row for row in data if regex.search(row.get(column, ''))]

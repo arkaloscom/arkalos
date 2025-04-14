@@ -17,7 +17,7 @@ def show_help():
     print(BLUE + 'Arkalos')
     print('The Python Framework for AI & Data Artisans')
     print('Copyright (c) 2025 Mev-Rael')
-    print('v0.3.0 (Beta 3)')
+    print('v0.4.0 (Beta 4)')
     print()
     print("Available commands:" + RESET)
     for command in ENABLED_COMMANDS:

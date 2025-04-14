@@ -1,7 +1,7 @@
 
 class App:
 
-    VERSION: str = '0.3.0'
+    VERSION: str = '0.4.0'
 
     _basePath: str = ''
     _envFile: str = '.env'

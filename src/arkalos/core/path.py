@@ -49,3 +49,7 @@ def arkalos_path(path: str|None = None) -> str:
     if path is None:
         path = ''
     return str(Path(__file__).parent.parent.joinpath(path))
+
+def get_rel_path(path: str) -> str:
+    '''Gets a relative path by removing the base path'''
+    return path.replace(base_path(), '').lstrip('/')
