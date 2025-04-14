@@ -63,16 +63,28 @@ uv run arkalos init
 
 ## Key Features
 
-* **🚀 Modern Python Workflow:**`<br>` Built with modern Python practices, libraries, and a package manager. Perfect for non-coders and AI engineers.
-* **🛠️ Hassle-Free Setup:**`<br>` No more struggling with environment setups, package installs, or import errors.
-* **🤝 Easy Collaboration & Folder Structure:**`<br>` Share code across devices or with your team. Built-in workspace folder and file structure. Know where to put each file.
-* **📓 Jupyter Notebook Friendly:**`<br>` Start with a simple notebook and easily transition to scripts, full apps, or microservices.
-* **📊 Built-in Data Warehouse:**`<br>` Connect to Notion, Airtable, Google Drive, and more. Uses SQLite for a local, lightweight data warehouse.
-* **🤖 AI, LLM & RAG Ready. Talk to Your Own Data:**`<br>` Train AI models, run LLMs, and build AI and RAG pipelines locally. Fully open-source and compliant. Built-in AI agent helps you to talk to your own data in natural language.
-* **🐞 Debugging and Logging Made Easy:**`<br>` Built-in utilities and Python extensions like `var_dump()` for quick variable inspection, `dd()` to halt code execution, and pre-configured logging for notices and errors.
-* **🧩 Extensible Architecture:**`<br>` Easily extend Arkalos components and inject your own dependencies with a modern, modular software design.
-* **🔗 Seamless Microservices:**`<br>` Deploy your own data or AI microservice like ChatGPT without the need to use external APIs to integrate with your existing platforms effortlessly.
-* **🔒 Data Privacy & Compliance First:**`<br>` Run everything locally with full control. No need to send sensitive data to third parties. Fully open-source under the MIT license, and perfect for organizations needing data governance.
+* **🚀 Modern Python Workflow:**<br> Built with modern Python practices, libraries, and a package manager. Perfect for non-coders and AI engineers.
+
+* **🛠️ Hassle-Free Setup:**<br> No more struggling with environment setups, package installs, or import errors.
+
+* **🤝 Easy Collaboration & Folder Structure:**<br> Share code across devices or with your team. Built-in workspace folder and file structure. Know where to put each file.
+
+* **📓 Jupyter Notebook Friendly:**<br> Start with a simple notebook and easily transition to scripts, full apps, or microservices.
+
+* **🕸️ Browser Automation & Structured Web Crawling & Scraping:**<br> Control a real browser to bypass auth and captchas, crawl dynamic websites, and extract structured data using simple annotations with CSS selectors, attributes, slices, and regex — no manual parsing needed.
+
+* **📊 Built-in Data Extractors & Warehouse:**<br> Connect to Notion, Airtable, Google Drive, and more. Uses SQLite for a local, lightweight data warehouse.
+
+* **🤖 AI, LLM & RAG Ready. Talk to Your Own Data:**<br> Train AI models, run LLMs, and build AI and RAG pipelines locally. Fully open-source and compliant. Built-in AI agent helps you to talk to your own data in natural language.
+
+* **🐞 Debugging and Logging Made Easy:**<br> Built-in utilities and Python extensions like `var_dump()` for quick variable inspection, `dd()` to halt code execution, and pre-configured logging for notices and errors.
+
+* **🧩 Extensible Architecture:**<br> Easily extend Arkalos components and inject your own dependencies with a modern, modular software design.
+
+* **🔗 Seamless Microservices:**<br> Deploy your own data or AI microservice like ChatGPT without the need to use external APIs to integrate with your existing platforms effortlessly.
+
+* **🔒 Data Privacy & Compliance First:**<br> Run everything locally with full control. No need to send sensitive data to third parties. Fully open-source under the MIT license, and perfect for organizations needing data governance.
+
 
 ## Truly Open-Source, Local, and Compliant
 
