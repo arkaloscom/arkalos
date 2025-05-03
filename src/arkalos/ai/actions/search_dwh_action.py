@@ -21,7 +21,7 @@ class SearchDWHAction(AIAction):
         df = pl.DataFrame(result_rows, schema=column_names, orient='row')
         return df
 
-    def run(self, sql: str) -> pl.DataFrame:
+    async def run(self, sql: str) -> pl.DataFrame:
         results = self.getDataFromDWH(sql)
         df = self.resultsToDf(results)
         return df

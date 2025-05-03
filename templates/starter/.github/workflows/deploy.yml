@@ -1,0 +1,27 @@
+name: Deploy to DO on push to main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          script: |
+            cd ${{ secrets.DEPLOY_APP_DIR }}
+            git pull
+            uv sync
+            cd frontend
+            npm install
+            npm run build
+            cd ..
+            pm2 restart arkalos-app

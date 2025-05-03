@@ -1,0 +1,17 @@
+input,
+select,
+textarea {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--input-bg);
+  border-radius: var(--base-border-radius);
+  /* width: 100%; */
+  padding: 4px;
+  flex: 1;
+  border: none;
+  color: var(--base-font-color);
+  padding: 12px;
+  font-size: 15px;
+  outline: none;
+  resize: none;
+}

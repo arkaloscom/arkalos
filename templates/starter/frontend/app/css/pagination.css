@@ -1,0 +1,33 @@
+nav[aria-label="pagination"] {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+
+nav[aria-label="pagination"] a {
+  display: inline-block;
+  padding: 6px 12px;
+  text-decoration: none;
+  color: var(--base-font-color);
+  border-radius: 4px;
+  background-color: var(--card-bg);
+  border: none;
+}
+
+nav[aria-label="pagination"] a[aria-current="page"] {
+  background-color: var(--color-info);
+  cursor: default;
+  pointer-events: none;
+}
+
+nav[aria-label="pagination"] a[aria-disabled="true"] {
+  color: var(--color-default);
+  cursor: default;
+  pointer-events: none;
+}

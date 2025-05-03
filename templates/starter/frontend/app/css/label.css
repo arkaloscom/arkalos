@@ -1,0 +1,23 @@
+b-label {
+  display: inline-flex;
+  background-color: var(--color-default);
+  border-radius: var(--base-border-radius);
+  color: var(--base-font-color);
+  padding: 0 0.5rem;
+}
+
+b-label[type="info"] {
+  background-color: var(--color-info);
+}
+
+b-label[type="success"] {
+  background-color: var(--color-success);
+}
+
+b-label[type="warning"] {
+  background-color: var(--color-warning);
+}
+
+b-label[type="danger"] {
+  background-color: var(--color-danger);
+}

@@ -1,6 +1,6 @@
 import re
 
-from arkalos import dwh
+from arkalos import dwh, config
 from arkalos.ai import AIAction
 
 
@@ -17,7 +17,7 @@ class TextToSQLAction(AIAction):
             return match.group(1).strip()
         raise Exception('TextToSQLTask.extractSQLFromMessage: SQL not found in the message.')
 
-    def run(self, message) -> str:
+    async def run(self, message) -> str:
         warehouse_schema = dwh().getSchemaDefinitions()
         prompt = f"""
             ### Instructions:
@@ -36,7 +36,8 @@ class TextToSQLAction(AIAction):
             ```sql
         """
 
-        response = self.generateTextResponse(prompt)
+        ai_conf_name = config('ai.use_actions')['text2sql']
+        response = await self.generateTextResponse(prompt, ai_conf_name)
         sql_query = self.extractSQLFromMessage(response)
         return sql_query
     

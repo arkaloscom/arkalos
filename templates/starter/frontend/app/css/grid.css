@@ -1,0 +1,21 @@
+b-grid {
+  display: grid;
+  gap: 2rem;
+  width: 100%;
+  /* Default for mobile: 1 card per row */
+  grid-template-columns: 1fr;
+}
+
+/* Medium screens: 2 cards per row */
+@media screen and (min-width: 768px) {
+  b-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Large screens: 3 cards per row */
+@media screen and (min-width: 1024px) {
+  b-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

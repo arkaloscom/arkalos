@@ -1,0 +1,44 @@
+:root {
+  /* Base */
+  --base-font-size: 16px;
+  --base-font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --base-font-color: #f1f1f1;
+  --base-bg-color: #27272d;
+  --base-border-radius: 0.5rem;
+
+  /* Colors (Background) */
+  --color-default: rgb(122, 122, 122);
+  --color-info: rgb(78, 105, 245);
+  --color-success: rgb(46, 163, 46);
+  --color-warning: rgb(184 142 4);
+  --color-danger: rgb(201, 74, 60);
+
+  /* Colors (Text only) */
+  --text-color-danger: rgb(243 126 105);
+
+  /* Nav */
+  --nav-bg-color: #1e1e23;
+  --nav-border-color: #323237;
+
+  /* Link  #64a5ff */
+  --link-color: #7aacff;
+
+  /* Button */
+  --button-bg-color: rgb(71, 102, 241);
+  --button-bg-color-disabled: #999;
+  --button-border-radius: var(--base-border-radius);
+
+  /* Form */
+  --input-bg: #3a3a45;
+  --placeholder: #a5a5b6;
+
+  /* Card */
+  --card-bg: #33333b;
+
+  /* Tooltip */
+  --tooltip-bg: #1e1e1e;
+
+  /* Chat */
+  --chat-msg-bg: rgb(64, 64, 69);
+  --chat-msg-bg-user: #454556;
+}

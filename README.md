@@ -1,4 +1,4 @@
-# Arkalos Beta 4 - The Python Framework for AI & Data Artisans
+# Arkalos Beta 5 - The Python Framework for AI & Data Artisans
 
 [![PyPI version](https://img.shields.io/pypi/v/arkalos)](https://pypi.org/project/arkalos/)
 [![PyPI Downloads](https://static.pepy.tech/badge/arkalos)](https://pepy.tech/projects/arkalos)

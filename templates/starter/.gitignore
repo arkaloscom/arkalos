@@ -1,6 +1,7 @@
 # Private files
 **/_private/**
 !**/_private/**/.gitkeep
+.env
 
 # Python-generated files
 __pycache__/

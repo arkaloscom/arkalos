@@ -1,0 +1,60 @@
+/* Heading Styles */
+.message h1 {
+  font-size: 1.8em;
+  margin: 0.5em 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 0.3em;
+}
+
+.message h2 {
+  font-size: 1.5em;
+  margin: 0.5em 0;
+}
+
+.message h3 {
+  font-size: 1.3em;
+  margin: 0.5em 0;
+}
+
+.message h4,
+.message h5,
+.message h6 {
+  font-size: 1.1em;
+  margin: 0.5em 0;
+}
+
+/* Paragraph Styles */
+.message p {
+  margin: 0.5em 0;
+  line-height: 1.6;
+}
+
+/* Code Block Styles */
+.message pre {
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  padding: 12px;
+  overflow-x: auto;
+  margin: 10px 0;
+}
+
+.message code {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.9em;
+}
+
+/* Inline code */
+.message p code {
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+/* Bold and Italic */
+.message strong {
+  font-weight: bold;
+}
+
+.message em {
+  font-style: italic;
+}

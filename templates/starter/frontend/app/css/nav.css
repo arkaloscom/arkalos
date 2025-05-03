@@ -1,0 +1,25 @@
+nav {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--nav-border-color);
+  gap: 2rem;
+  padding: 0 2rem;
+  background-color: var(--nav-bg-color);
+
+  & > * {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+}
+
+nav b-menu a {
+  color: var(--base-font-color);
+  margin: 0.75rem 1rem;
+  text-decoration: none;
+}
+
+nav a.active {
+  text-decoration: underline;
+}

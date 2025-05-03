@@ -1,0 +1,29 @@
+button {
+  border-radius: var(--button-border-radius);
+  border: none;
+  padding: 0.6rem 1.2rem;
+  font-family: inherit;
+  background-color: var(--button-bg-color);
+  cursor: pointer;
+  transition: border-color 0.25s;
+  color: var(--base-font-color);
+  border: none;
+  border-radius: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button:hover {
+  opacity: 0.8;
+}
+
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+button:disabled {
+  background-color: var(--button-bg-color-disabled);
+  cursor: not-allowed;
+}

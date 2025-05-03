@@ -19,19 +19,19 @@ class DWHAgent(AIAgent):
     def cleanup(self) -> None:
         dwh().disconnect()
 
-    def textToSQL(self, message: str) -> str:
-        return self.runAction(TextToSQLAction, message)
+    async def textToSQL(self, message: str) -> str:
+        return await self.runAction(TextToSQLAction, message)
     
-    def searchDWH(self, sql_query: str) -> str:
-        df = self.runAction(SearchDWHAction, sql_query)
+    async def searchDWH(self, sql_query: str) -> str:
+        df = await self.runAction(SearchDWHAction, sql_query)
         return self.dfToMarkdown(df)
     
-    def processMessage(self, message: str) -> str:
+    async def processMessage(self, message: str) -> str:
         sql_section = "Transforming text to SQL..."
-        sql_query = self.textToSQL(message)
+        sql_query = await self.textToSQL(message)
         
         query_section = f"Running SQL:\n ```sql\n{sql_query}\n```"
         results_heading = "Here is what I found:"
-        results_table = self.searchDWH(sql_query)
+        results_table = await self.searchDWH(sql_query)
         
         return f"{sql_section}\n\n{query_section}\n\n{results_heading}\n\n{results_table}"

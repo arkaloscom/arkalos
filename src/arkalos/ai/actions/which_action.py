@@ -23,7 +23,7 @@ class WhichAction(AIAction):
             task_list = task_list + task_key + ': ' + self._actions[task_key].DESCRIPTION + '\n'
         return task_list
 
-    def run(self, message) -> str:
+    async def run(self, message) -> str:
         task_list = self.buildActionListForPrompt()
         prompt = f"""
             ### Instructions:
@@ -42,6 +42,6 @@ class WhichAction(AIAction):
             Respond with a string only, a key name from the list (before the ":")
         """
 
-        response = self.generateTextResponse(prompt)
+        response = await self.generateTextResponse(prompt)
         return response
     

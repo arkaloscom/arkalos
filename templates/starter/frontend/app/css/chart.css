@@ -1,0 +1,51 @@
+b-chart {
+  width: 100%;
+  aspect-ratio: 1 / 0.8;
+
+  & svg,
+  & .chart-wrapper,
+  & .vega-embed,
+  & .vega-embed-wrapper,
+  & .observablehq,
+  & .html-fill-item,
+  & .cell-output,
+  & .card,
+  & .bslib-grid {
+    height: 100%;
+  }
+
+  & text {
+    font-family: var(--base-font-family) !important;
+  }
+}
+
+/* Tooltip container */
+#vg-tooltip-element {
+  background-color: var(--tooltip-bg) !important; /* Dark background */
+  color: var(--base-font-color) !important; /* Light text */
+  border: none !important;
+  border-radius: var(--base-border-radius) !important;
+  font-family: var(--base-font-family) !important;
+  font-size: 1rem !important;
+  padding: 0.5rem !important;
+  box-shadow: 0 0.25rem 0.6rem rgba(0, 0, 0, 0.3) !important;
+  max-width: 25rem;
+}
+
+/* Tooltip table */
+#vg-tooltip-element table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Tooltip table cells */
+#vg-tooltip-element td {
+  padding: 4px 6px;
+  border: none;
+}
+
+/* Optional: Bold keys */
+#vg-tooltip-element td:first-child {
+  font-weight: 600;
+  color: #ddd;
+}

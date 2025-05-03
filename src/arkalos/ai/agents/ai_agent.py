@@ -6,6 +6,7 @@ import pandas as pd
 import polars as pl
 
 from arkalos.ai import AIAction, WhichAction
+from arkalos.core.logger import log as Log
 
 
 
@@ -40,7 +41,7 @@ class AIAgent(ABC):
     # Interface methods
 
     @abstractmethod
-    def processMessage(self, message: str) -> str:
+    async def processMessage(self, message: str) -> str:
         """Process an incoming message and produce a response"""
         pass
 
@@ -56,7 +57,7 @@ class AIAgent(ABC):
         """Register multiple tasks with this agent"""
         self._actions = actions
     
-    def runAction(self, action_or_id: str|Type[AIAction], message: str) -> Any:
+    async def runAction(self, action_or_id: str|Type[AIAction], message: str) -> Any:
         """Run a specific task"""
         action_id: str
         if inspect.isclass(action_or_id):
@@ -65,16 +66,16 @@ class AIAgent(ABC):
             action_id = str(action_or_id)
         if action_id not in self._actions:
             raise KeyError(f"Action '{action_id}' not found")
-        return self._actions[action_id].run(message)
+        return await self._actions[action_id].run(message)
     
-    def whichAction(self, message: str):
-        return WhichAction(self._actions).run(message)
+    async def whichAction(self, message: str):
+        return await WhichAction(self._actions).run(message)
     
 
     
     # Direct runtime methods
     
-    def runConsole(self) -> None:
+    async def runConsole(self) -> None:
         """Run the agent in console mode"""
         self.setup()
         
@@ -89,7 +90,7 @@ class AIAgent(ABC):
                     break
                 
                 try:
-                    response = self.processMessage(user_input)
+                    response = await self.processMessage(user_input)
                     print(f"{self.NAME}: {response}")
                     print()
                     print(f"{self.NAME}: Anything else I can help you with?")
@@ -103,24 +104,22 @@ class AIAgent(ABC):
             
         self.cleanup()
     
-    def handleHttp(self, message: str) -> Dict[str, str]:
+    async def handleHttp(self, message: str) -> dict[str, str]:
         """Handle an HTTP request and return JSON response"""
-        try:
-            self.setup()
-            response = self.processMessage(message)
-            self.cleanup()
-            return {"response": response}
-        except Exception as e:
-            return {"error": str(e)}
+        self.setup()
+        response = await self.processMessage(message)
+        self.cleanup()
+        return {"response": response}
     
-    def handleWebSocket(self, message: str, send_fn: Callable[[str], None]) -> None:
+    async def handleWebSocket(self, message: str, send_fn: Callable[[str], None]) -> None:
         """Handle a WebSocket message and send response"""
         try:
             self.setup()
-            response = self.processMessage(message)
+            response = await self.processMessage(message)
             send_fn(response)
             self.cleanup()
         except Exception as e:
+            Log.exception(e)
             send_fn(f"Error: {str(e)}")
     
 

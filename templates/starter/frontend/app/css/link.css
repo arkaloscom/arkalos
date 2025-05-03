@@ -1,0 +1,7 @@
+a {
+  color: var(--link-color);
+  text-decoration: inherit;
+}
+a:hover {
+  opacity: 0.8;
+}
