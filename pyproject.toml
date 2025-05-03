@@ -1,6 +1,6 @@
 [project]
 name = "arkalos"
-version = "0.5.0"
+version = "0.5.1"
 description = "Arkalos is an easy-to-use framework for data analysis, building data apps, warehouses, AI agents, robots, ML, training LLMs with elegant syntax. It just works."
 readme = "README.md"
 authors = [

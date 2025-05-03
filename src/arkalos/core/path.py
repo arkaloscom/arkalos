@@ -47,12 +47,7 @@ def drive_path(path: str|None = None) -> str:
 def arkalos_path(path: str|None = None) -> str:
     '''Get a path relative to installed arkalos package root inside site-packages.'''
     this_files_dir = Path(__file__).parent.resolve()
-    root_arkalos_dir = this_files_dir.parent.parent.resolve()
-    folder_name = root_arkalos_dir.name
-    if folder_name == "src":
-        # Go one more parent up if it's the src folder (for local development)
-        root_arkalos_dir = root_arkalos_dir.parent.resolve()
-
+    root_arkalos_dir = this_files_dir.parent.resolve()
     if path is None:
         path = ''
     return str(root_arkalos_dir.joinpath(path))
