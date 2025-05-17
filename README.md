@@ -1,4 +1,4 @@
-# Arkalos Beta 5 - The Python Framework for AI & Data Artisans
+# Arkalos Beta 6 - The Python Framework for AI & Data Artisans
 
 [![PyPI version](https://img.shields.io/pypi/v/arkalos)](https://pypi.org/project/arkalos/)
 [![PyPI Downloads](https://static.pepy.tech/badge/arkalos)](https://pepy.tech/projects/arkalos)
@@ -89,6 +89,34 @@ uv run arkalos init
 ## Truly Open-Source, Local, and Compliant
 
 Arkalos helps individuals and businesses analyze data securely, with everything running locally and fully compliant with regulations.
+
+## ClusterAnalyzer, DataTransformer and Altair Dendrogram and Other Charts
+
+```python
+dtf = (DataTransformer(df)
+    .renameColsSnakeCase()
+    .dropRowsByID(9432)
+    .dropCols(['id', 'dt_customer'])
+    .dropRowsDuplicate()
+    .dropRowsNullsAndNaNs()
+    .dropColsSameValueNoVariance()
+    .splitColsOneHotEncode(['education', 'marital_status'])
+)
+
+cln_df = dtf.get()  # Get cleaned Polars DataFrame
+
+print(f'Dataset shape: {cln_df.shape}')
+cln_df.head()
+```
+
+```python
+n_clusters = ca.findNClustersViaDendrogram()
+print(f'Optimal clusters (dendrogram): {n_clusters}')
+
+ca.createDendrogram()
+```
+
+<img src="https://arkalos.com/assets/img/altair_dendrogram_python_arkalos.svg" alt="Altair Dendrogram example in Python Arkalos">
 
 ## Free Built-In Data Warehouse and Integrations
 
