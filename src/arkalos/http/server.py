@@ -2,6 +2,7 @@
 import os
 import importlib.util
 import logging
+from typing import Type
 
 from fastapi import FastAPI, APIRouter, Request
 from fastapi.staticfiles import StaticFiles
@@ -20,6 +21,7 @@ from arkalos.http.middleware.middleware import BaseHTTPMiddleware
 from arkalos.http.middleware.handle_exceptions_middleware import HandleExceptionsMiddleware
 from arkalos.http.middleware.log_requests_middleware import LogRequestsMiddleware
 from arkalos.http.spa_static_files import SPAStaticFiles
+from arkalos.http.middleware.middleware import Middleware
 
 
 
@@ -28,6 +30,10 @@ class HTTPServer:
     __app: HTTPApp
     __router: APIRouter
 
+    __base_path: str
+    __middleware: list[Type[Middleware]]
+    __route_dirs: list[tuple[str, str]]
+
     def __init__(self):
         self.__app = HTTPApp(
             title=config('app.name', 'Arkalos'),
@@ -35,6 +41,11 @@ class HTTPServer:
             debug=False, 
             lifespan=self.lifespan)
         self.__router = APIRouter()
+
+    def withBasePath(self, base_path: str) -> 'HTTPServer':
+        self.__base_path = base_path
+        Log.debug('Application base path is: ' + self.__base_path)
+        return self
 
     def registerExceptionHandlers(self):
         # self.__app.add_exception_handler(RequestValidationError, self._validationExceptionHandler)
@@ -52,34 +63,59 @@ class HTTPServer:
     async def _genericExceptionHandler(self, request, exc):
         pass
 
+    def withMiddleware(self, middleware: list[Type[Middleware]]) -> 'HTTPServer':
+        self.__middleware = middleware
+        self.registerMiddlewares()
+        return self
+
     def registerMiddlewares(self):
-        middlewares = [
-            HandleExceptionsMiddleware,
-            LogRequestsMiddleware,
-        ]
-        for middleware in middlewares:
+        for middleware in self.__middleware:
+            Log.debug('Registering middleware: ' + middleware.__module__)
             self.__app.add_middleware(BaseHTTPMiddleware, dispatch=middleware())
 
-    def mountDirs(self):
-        # self.mountPublicDir()
-        self.mountFrontendBuildDir()
+    # def mountDirs(self):
+    #     # self.mountPublicDir()
+    #     self.mountFrontendBuildDir()
 
-    def mountPublicDir(self):
-        self.__app.mount('/', StaticFiles(directory=base_path('public')), name='public')
+    # def mountPublicDir(self):
+    #     self.__app.mount('/', StaticFiles(directory=base_path('public')), name='public')
 
-    def mountFrontendBuildDir(self):
-        self.__app.mount('/', SPAStaticFiles(directory=base_path('frontend/dist'), html=True), name='frontend')
+    def withMountFrontendBuildDir(self) -> 'HTTPServer':
+        path = base_path('frontend/dist')
+        if os.path.exists(path):
+            Log.debug('Mounting static files (Frontend build directory): frontend/dist')
+            self.__app.mount('/', SPAStaticFiles(directory=base_path('frontend/dist'), html=True), name='frontend')
+        else:
+            Log.warning('Bootstrapping the HTTP application with frontend build direcotry, ' \
+            'but directory "frontend/dist" doesn\'t exist. Do "cd frontend && npm run build" '
+            'or disable mounting frontend build dir in the app/bootstrap.py.')
+        return self
 
-    # Dynamically import and register all API route files from 'app/http/routes'.
+    def withRoutes(self, route_dirs: list[tuple[str, str]]) -> 'HTTPServer':
+        self.__route_dirs = route_dirs
+        self.registerRoutes()
+        return self
+
     def registerRoutes(self):
-        routers_dir = base_path(f'app/http/routes')
+        for route_dir in self.__route_dirs:
+            dir = route_dir[0]
+            prefix = route_dir[1]
+            self.registerRoutesDir(dir, prefix)
+
+    # Dynamically import and register all route files from the dir
+    def registerRoutesDir(self, dir='app/http/routes', prefix='/api'):
+        routers_dir = base_path(dir)
         for filename in os.listdir(routers_dir):
-            if filename.endswith(".py") and filename != "__init__.py":
-                module_name = f"app.http.routes.{filename[:-3]}"
+            if filename.endswith('.py') and filename != '__init__.py':
+                module_path = dir.strip('/').replace('/', '.')
+                module_name = f'{module_path}.{filename[:-3]}'
                 module = importlib.import_module(module_name)
                 if (hasattr(module, 'router')):
-                    Log.info('Registering route file: ' + module_name)
-                    self.__app.include_router(module.router, prefix='/api')
+                    Log.debug('Registering route file: ' + module_name)
+                    self.__app.include_router(module.router, prefix=prefix)
+
+    def create(self):
+        return self.__app
 
     def getApp(self):
         return self.__app
@@ -100,8 +136,7 @@ class HTTPServer:
 
     def run(self, host: str = '127.0.0.1', port: int = 8000, reload: bool = False, workers: int = 1):
         try:
-            bootstrap().run()
-
+            bootstrap().register()
             Log.logger()
 
             reload_includes: list[str]|None = None
@@ -119,7 +154,7 @@ class HTTPServer:
             Log.info(f"Config: host={host}, port={port}, workers={workers}, reload={reload}")
 
             uvicorn.run(
-                'arkalos.http.server_start:app',
+                'app.bootstrap:run',
                 host=host,
                 port=port,
                 reload=reload,
@@ -128,7 +163,8 @@ class HTTPServer:
                 workers=workers,
                 log_config=Log.logger().getUvicornLogConfig(),
                 access_log=False,
-                log_level=logging.INFO
+                log_level=logging.INFO,
+                factory=True
             )
         except BaseException as e:
             Log.exception(e)

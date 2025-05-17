@@ -52,6 +52,50 @@ def arkalos_path(path: str|None = None) -> str:
         path = ''
     return str(root_arkalos_dir.joinpath(path))
 
+def find_folder_upwards(folder_name: str, starting_dir: str|None = None) -> str|None:
+    '''
+    Find the first folder with given name by searching upwards
+    from the current file's directory.
+    
+    Args:
+        folder_name: Name of the folder to find
+        starting_dir: Directory to start searching from (defaults to current file's directory)
+        
+    Returns:
+        Full path to the found folder or None if not found
+    '''
+
+    # If no starting directory provided, use the directory of the current file
+    if starting_dir is None:
+        starting_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    current_dir = Path(starting_dir).absolute()
+    
+    # Keep going up until we find the folder or reach the filesystem root
+    while True:
+        # Check if target folder exists in current directory
+        target_path = current_dir / folder_name
+        if target_path.is_dir():
+            return str(target_path)
+        
+        # Move up one directory
+        parent_dir = current_dir.parent
+        
+        # If we've reached the root (parent is same as current)
+        if parent_dir == current_dir:
+            return None
+            
+        current_dir = parent_dir
+
+def arkalos_templates_path() -> str:
+    path = find_folder_upwards('templates')
+
+    if not path:
+        raise RuntimeError('Could not find Arkalos templates path')
+    
+    return path
+    
+
 def get_rel_path(path: str) -> str:
     '''Gets a relative path by removing the base path'''
     return path.replace(base_path(), '').lstrip('/')

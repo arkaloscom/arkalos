@@ -4,7 +4,7 @@ from arkalos.http.server import HTTPServer
 
 Registry.register('http_server', HTTPServer)
 
-def http_server() -> HTTPServer:
+def HTTP() -> HTTPServer:
     return Registry.get('http_server')
 
-router = http_server().getRouter()
+router = HTTP().getRouter()

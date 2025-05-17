@@ -1,11 +1,8 @@
 import argparse
 from arkalos.core.config import config
-from arkalos.core.http import http_server
-from arkalos.core.bootstrap import bootstrap
+from arkalos.core.http import HTTP
 
 def run():
-    bootstrap().run()
-
     parser = argparse.ArgumentParser(
         prog='arkalos',
         description='Arkalos CLI: Friendly framework for AI & Data'
@@ -43,7 +40,7 @@ def run():
     args = parser.parse_args()
 
     if args.command == 'serve':
-        server = http_server()
+        server = HTTP()
         server.run(host=args.host, port=args.port, reload=args.reload, workers=args.workers)
     else:
         parser.print_help()
