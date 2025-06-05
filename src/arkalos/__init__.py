@@ -4,7 +4,8 @@ from arkalos.core.bootstrap import bootstrap
 from arkalos.core.env import env
 from arkalos.core.path import base_path, drive_path
 from arkalos.core.config import config
-from arkalos.core.dwh import dwh
+from arkalos.core.dwh import DWH
+from arkalos.core.db import DB
 from arkalos.core.http import HTTP, router
 import arkalos.core.logger.log as Log
 from arkalos.utils.var import var_dump, dd

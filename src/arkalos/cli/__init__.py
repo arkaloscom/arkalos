@@ -13,7 +13,13 @@ BLUE = '\033[34m'
 ENABLED_COMMANDS = {
     'init': 'Init the Arkalos starter project with the base folder structure and configuration.',
     'serve': 'Start Arkalos HTTP API Server.',
-    'make:mw': 'Generate a new middleware class' 
+    'migrate': 'Run database migrations. (Optionally, provide a version to migrate).',
+    'migrate:dwh': 'Run data warehouse migrations. (Optionally, provide a version to migrate).',
+    'rollback': 'Rollbacks last database version\'s migrations.',
+    'rollback:dwh': 'Rollbacks last data warehouse version\'s migrations.',
+    'make:mw': 'Generate a new middleware class',
+    'make:mig': 'Generate a new Database migration file. Provide a table name.',
+    'make:mig:dwh': 'Generate a new Data Warehouse migration file. Provide a table name with optional namespace.'
 }
 
 def show_help():
@@ -21,24 +27,19 @@ def show_help():
     print(BLUE + 'Arkalos')
     print('The Python Framework for AI & Data Artisans')
     print('Copyright (c) 2025 Mev-Rael')
-    print('v0.6.0 (Beta 6)')
+    print('v0.7.0 (Beta 7)')
     print()
     print("Available commands:" + RESET)
     for command in ENABLED_COMMANDS:
-        print(f"  {GREEN}{command}{RESET} - {YELLOW}{ENABLED_COMMANDS[command]}{RESET}")
+        print(f"  {GREEN}{command}{RESET} - {ENABLED_COMMANDS[command]}")
     print()
     print(f"{BLUE}Use '{GREEN}uv run arkalos <command>{BLUE}' to run a command.{RESET}")
     print()
 
 def run_command(command):
     if command in ENABLED_COMMANDS:
-        try:
-            module = importlib.import_module(f'arkalos.cli.{command.replace(':', '_')}')
-            module.run()
-        except ModuleNotFoundError:
-            print()
-            print(f"Command '{command}' is not implemented properly.")
-            print()
+        module = importlib.import_module(f'arkalos.cli.{command.replace(':', '_')}')
+        module.run()
     else:
         print()
         print(f"Command '{command}' is not available. Please use a valid command.")

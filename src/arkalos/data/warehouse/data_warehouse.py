@@ -1,201 +1,321 @@
 
-from typing import Any
-from abc import ABC, abstractmethod
+from __future__ import annotations
+from typing import Type
+from contextlib import contextmanager
+from dataclasses import dataclass
 import os
-import json
 import re
+from enum import StrEnum
 from datetime import datetime, timezone
 
 import polars as pl
+import ibis # type: ignore
 
-from arkalos.utils.schema import get_data_schema
-from arkalos.data.extractors.data_extractor import TabularDataExtractor
+from arkalos.core.path import base_path
 from arkalos.core.config import config
-
-class DataWarehouse(ABC):
-
-    DTYPE_INT = 'INTEGER'
-    DTYPE_FLOAT = 'REAL'
-    DTYPE_TEXT = 'TEXT'
-    DTYPE_BOOL = 'NUMERIC'
-    DTYPE_DATETIME = 'TEXT'
-    DTYPE_ARRAY = 'TEXT'
-    DTYPE_JSON = 'TEXT'
-
-    _connection: Any|None = None
-    _cursor: Any|None = None
-
-    NAME: str
-    DESCRIPTION: str
-
-    @abstractmethod
-    def connect(self) -> None:
-        pass
-
-    @abstractmethod
-    def generateCreateSchemaQuery(self, extractor: TabularDataExtractor, table_name: str, data_schema: dict) -> str:
-        pass
-    
-    @abstractmethod
-    def generateDropSchemaQuery(self, extractor: TabularDataExtractor, table_name: str) -> str:
-        pass
-
-    @abstractmethod
-    def generateInsertQuery(self, serialized_row, extractor: TabularDataExtractor, table_name: str) -> str:
-        pass
-
-    @abstractmethod
-    def generateUpdateQuery(self, serialized_row, extractor: TabularDataExtractor, table_name: str, id) -> str:
-        pass
-
-    @abstractmethod
-    def executeQuery(self, query: str, values = None):
-        pass
-
-    @abstractmethod
-    def selectQuery(self, query: str, values = None) -> tuple:
-        pass
+from arkalos.core.logger import log as Log
+from arkalos.utils.str_utils import snake
+from arkalos.data.extractors.data_extractor import TabularDataExtractor
+from arkalos.data.database.database import Database, DatabaseType
+from arkalos.schema.ddl.table_builder import TableBuilder
+from arkalos.schema.types.data_input_type import DataItemType, DataItemClassType, DataCollectionType
 
 
 
-    def disconnect(self):
-        if (self._connection is not None):
-            self._connection.close()
-            self._connection = None
-            self._cursor = None
+@dataclass
+class MetaRecordType:
+    key: str
+    val_str: str|None = None
+    val_int: int|None = None
+    val_datetime: datetime|None = None
 
 
-    def mapInt(self, polars_data_type: pl.Struct):
-        if polars_data_type in (pl.Int64, pl.Int32, pl.Int16):
-            return self.DTYPE_INT
-        return False
-    
-    def mapFloat(self, polars_data_type: pl.Struct):
-        if polars_data_type in (pl.Float64, pl.Float32):
-            return self.DTYPE_FLOAT
-        return False
-    
-    def mapText(self, polars_data_type: pl.Struct):
-        if polars_data_type == pl.Utf8:
-            return self.DTYPE_TEXT
-        return False
-    
-    def mapBool(self, polars_data_type: pl.Struct):
-        if polars_data_type == pl.Boolean:
-            return self.DTYPE_BOOL
-        return False
-    
-    def mapDatetime(self, polars_data_type: pl.Struct):
-        if polars_data_type == pl.Datetime:
-            return self.DTYPE_DATETIME
-        return False
-    
-    def mapArray(self, polars_data_type: pl.Struct):
-        if isinstance(polars_data_type, pl.List):
-            return self.DTYPE_ARRAY
-        return False
-    
-    def mapJSON(self, polars_data_type: pl.Struct):
-        if isinstance(polars_data_type, pl.Struct):
-            return self.DTYPE_JSON
-        return False
 
-    def mapDataType(self, polars_data_type: pl.Struct) -> str:
-        mappers = [
-            self.mapInt,
-            self.mapFloat,
-            self.mapText,
-            self.mapBool,
-            self.mapDatetime,
-            self.mapArray,
-            self.mapJSON
-        ]
-        for mapper in mappers:
-            if col_type := mapper(polars_data_type):
-                return col_type
-        raise ValueError(f"Unsupported Polars type: {polars_data_type}")
-    
-    def detectDataSchema(self, data: pl.DataFrame) -> dict:
-        return get_data_schema(data)
-     
-    def generateTableName(self, extractor: TabularDataExtractor, table_name: str) -> str:
-        return extractor.NAME + '__' + table_name
+class DataWarehouseLayerScope:
+
+    _dwh: DataWarehouse
+    _layerName: str
+
+
+
+    def __init__(self, dwh: DataWarehouse, layer_name: str):
+        self._dwh = dwh
+        self._layerName = layer_name
         
-    def dropTable(self, extractor: TabularDataExtractor, table_name: str):
-        drop_table_sql = self.generateDropSchemaQuery(extractor, table_name)
-        self.executeQuery(drop_table_sql)
 
-    def createTable(self, extractor: TabularDataExtractor, table_name: str, data_schema: dict):
-        create_table_sql = self.generateCreateSchemaQuery(extractor, table_name, data_schema)
-        self.updateSchemaDefinitions(create_table_sql)
-        self.executeQuery(create_table_sql)
 
-    def serializeValue(self, value, dtype):
-        if isinstance(dtype, pl.List) or isinstance(dtype, pl.Struct):
-            return json.dumps(value)  # Serialize lists and structs as JSON
-        elif dtype == pl.Datetime:
-            return str(value)  # Store datetime as full string
+    def layerName(self) -> str:
+        return self._layerName
+    
+    # Stats
+    
+    def tableExists(self, table_name: str) -> bool:
+        return self._dwh.tableExists(table_name, self.layerName())
+    
+    def listTables(self):
+        return self._dwh.listTables(self.layerName())
+    
+    # DDL
+
+    def autoCreateTable(self, table_name: str, schema: pl.Schema):
+        sql = self._dwh.autoCreateTable(table_name, schema, self.layerName())
+        self._dwh.schemaUpdateDump(self._layerName)
+
+    def _onCreateTableSuccess(self, sql: str):
+        self._dwh.schemaUpdateDump(self._layerName)
+
+    def createTable(self, table_name: str):
+        return self._dwh.createTable(table_name, self.layerName())
+
+    def alterTable(self, table_name: str):
+        return self._dwh.alterTable(table_name, self.layerName())
+    
+    def dropTable(self, table_name: str):
+        return self._dwh.dropTable(table_name, self.layerName())
+    
+    # Select
+    
+    def table(self, table_name: str) -> ibis.Table:
+        return self._dwh.table(table_name, self.layerName())
+    
+    def selectAll(self, table_name: str) -> pl.DataFrame:
+        return self._dwh.selectAll(table_name, table_group=self.layerName())
+    
+    # Insert
+    
+    def insert(self, table_name: str, item: DataItemType) -> None:
+        return self._dwh.insert(table_name, item, table_group=self.layerName())
+    
+    def insertReturning(self, 
+        table_name: str, 
+        item: DataItemType,
+        cls: DataItemClassType|None = None
+    ) -> DataItemType:
+        return self._dwh.insertReturning(table_name, item, cls, table_group=self.layerName())
+    
+    def insertMultiple(self, table_name: str, data: DataCollectionType) -> None:
+        return self._dwh.insertMultiple(table_name, data, table_group=self.layerName())
+    
+    # Update
+    
+    def update(self, table_name: str, item: DataItemType, where_col: str, where_val: str|int):
+        return self._dwh.update(table_name, item, where_col, where_val, table_group=self.layerName())
+    
+    # Delete
+    
+    def delete(self, table_name: str, where_col: str, where_val: str):
+        return self._dwh.delete(table_name, where_col, where_val, table_group=self.layerName())
+
+
+
+class DataWarehouse(Database):
+
+    TYPE: DatabaseType = DatabaseType.DATA_WAREHOUSE
+    META_TABLE_NAME: str = '_meta'
+
+    _sqliteRawPath: str
+    _sqliteCleanPath: str
+    _sqliteBIPath: str
+
+    _schemaFilePathRaw: str
+    _schemaFilePathClean: str
+    _schemaFilePathBI: str
+
+    _rawLayerName: str
+    _cleanLayerName: str
+    _BILayerName: str
+
+    _rawLayerScope: DataWarehouseLayerScope
+    _cleanLayerScope: DataWarehouseLayerScope
+    _BILayerScope: DataWarehouseLayerScope
+
+    def __init__(self) -> None:
+        self._connection = None
+        self._engine = str(config('data_warehouse.engine')).lower()
+        self._host = str(config('data_warehouse.host')).lower()
+        self._port = str(config('data_warehouse.port')).lower()
+        self._database = str(config('data_warehouse.database')).lower()
+        self._username = str(config('data_warehouse.username')).lower()
+        self._password = str(config('data_warehouse.password')).lower()
+
+        suffix = '_ddb' if self._engine == 'duckdb' else ''
+        self._filePath = str(config(f'data_warehouse.path{suffix}')).lower()
+
+        self._sqliteRawPath = str(config('data_warehouse.path_raw')).lower()
+        self._sqliteCleanPath = str(config('data_warehouse.path_clean')).lower()
+        self._sqliteBIPath = str(config('data_warehouse.path_bi')).lower()
+
+        self._schemaFilePathRaw = str(config('data_warehouse.schema_path_raw')).lower()
+        self._schemaFilePathClean = str(config('data_warehouse.schema_path_clean')).lower()
+        self._schemaFilePathBI = str(config('data_warehouse.schema_path_bi')).lower()
+
+        self._rawLayerName = str(config('data_warehouse.layer_raw')).lower()
+        self._cleanLayerName = str(config('data_warehouse.layer_clean')).lower()
+        self._BILayerName = str(config('data_warehouse.layer_bi')).lower()
+
+        self._rawLayerScope = DataWarehouseLayerScope(self, self._rawLayerName)
+        self._cleanLayerScope = DataWarehouseLayerScope(self, self._cleanLayerName)
+        self._BILayerScope = DataWarehouseLayerScope(self, self._BILayerName)
+
+
+    def onAfterConnected(self) -> None:
+        if self._engine == 'sqlite':
+            self.executeSql(f"ATTACH DATABASE '{base_path(self._sqliteRawPath)}' AS {self.raw().layerName()}")
+            self.executeSql(f"ATTACH DATABASE '{base_path(self._sqliteCleanPath)}' AS {self.clean().layerName()}")
+            self.executeSql(f"ATTACH DATABASE '{base_path(self._sqliteBIPath)}' AS {self.BI().layerName()}")
+        elif self._engine == 'duckdb':
+            self.executeSql(f'CREATE SCHEMA IF NOT EXISTS {self.raw().layerName()}')
+            self.executeSql(f'CREATE SCHEMA IF NOT EXISTS {self.clean().layerName()}')
+            self.executeSql(f'CREATE SCHEMA IF NOT EXISTS {self.BI().layerName()}')
+
+    def onSchemaUpdate(self, table_name: str, table_group: str|None = None):
+        if table_group:
+            self.schemaUpdateDump(table_group)
+
+
+
+    ###########################################################################
+    # META
+    ###########################################################################
+
+    def metaTableExists(self, layer_name: str) -> bool:
+        return self.tableExists('_meta', layer_name)
+    
+    def metaCreateTable(self, layer_name: str) -> None:
+        Log.info(f'Creating Data Warehouse "{layer_name}.{self.META_TABLE_NAME}" table.')
+        with self.createTable(self.META_TABLE_NAME, layer_name) as table:
+            table.col('id').id()
+            table.col('key').string().notNull()
+            table.col('value_str').string()
+            table.col('value_int').integer()
+            table.col('value_datetime').datetime()
+            table.indexUnique(['key'])
+
+    def metaDropTable(self, layer_name: str):
+        self.dropTable(self.META_TABLE_NAME, layer_name)
+
+    def metaInsertOrUpdate(self, 
+        layer_name: str,
+        key: str, 
+        val_str: str|None = None, 
+        val_int: int|None = None,
+        val_datetime: datetime|None = None
+    ) -> None:
+        
+        meta = MetaRecordType(
+            key=key,
+            val_str=val_str,
+            val_int=val_int,
+            val_datetime=val_datetime
+        )
+        meta_df = self.metaSelectAll(layer_name)
+        key_exists = key in meta_df['key'].to_list()
+        if key_exists:
+            self.update(self.META_TABLE_NAME, meta, 'key', meta.key, table_group=layer_name)
+        self.insert(self.META_TABLE_NAME, meta, table_group=layer_name)
+
+    def metaSelectAll(self, layer_name: str) -> pl.DataFrame:
+        table = self.table(self.META_TABLE_NAME, table_group=layer_name)
+        df = pl.from_pandas(table.execute())
+        return df
+    
+    def metaDelete(self, layer_name: str, key: str) -> None:
+        self.delete(self.META_TABLE_NAME, 'key', key, table_group=layer_name)
+
+
+
+    ###########################################################################
+    # META LAST SYNC
+    ###########################################################################
+
+    def generateLastSyncKey(self, extractor: TabularDataExtractor, table_name: str) -> str:
+        source_table = self.generateSourceTableName(extractor, table_name)
+        key = 'last_sync__' + source_table
+        return key
+
+    def updateLastSyncDate(self, 
+        layer_name: str, 
+        extractor: TabularDataExtractor, 
+        table_name: str
+    ) -> None:
+        '''
+        Write current UTC datetime to the meta table
+        Use for when a specific source:table was fetched last time
+        '''
+        key = self.generateLastSyncKey(extractor, table_name)
+        time_now = datetime.now(timezone.utc)
+        self.metaInsertOrUpdate(layer_name, key, val_datetime=time_now)
+
+    def getLastSyncDate(self, 
+        layer_name: str, 
+        extractor: TabularDataExtractor, 
+        table_name: str
+    ) -> datetime|None:
+        df = self.metaSelectAll(layer_name)
+        key = self.generateLastSyncKey(extractor, table_name)
+        key_exists = key in df['key'].to_list()
+        if key_exists:
+            return df.filter(pl.col('key') == key).get_column('val_datetime')[0]
+        return None
+    
+
+
+    ###########################################################################
+    # SCHEMA DUMP FOR LLM
+    ###########################################################################
+
+    def schemaFilePath(self, layer_name: str) -> str:
+        if layer_name == self._rawLayerName:
+            return self._schemaFilePathRaw
+        elif layer_name == self._cleanLayerName:
+            return self._schemaFilePathClean
         else:
-            return value
+            return self._schemaFilePathBI
 
-    def serializeRow(self, row, data_schema):
-        serialized_row = {col: self.serializeValue(row[col], data_schema[col]) for col in row}
-        return serialized_row
+        
+    def schemaUpdateDump(self, layer_name: str) -> None:
+        file_path = self.schemaFilePath(layer_name)
+        sql = self.showCreateTablesAsDump(layer_name)
+        with open(file_path, 'w') as f:
+            f.write(sql)
 
-    def importData(self, extractor: TabularDataExtractor, table_name: str, data_schema, data):
-        for row in data:
-            serialized_row = self.serializeRow(row, data_schema)
-            insert_sql = self.generateInsertQuery(serialized_row, extractor, table_name)
-            self.executeQuery(insert_sql, list(serialized_row.values()))
-
-    def importUpdatedRow(self, extractor: TabularDataExtractor, table_name: str, data_schema, row, id):
-        serialized_row = self.serializeRow(row, data_schema)
-        update_sql = self.generateUpdateQuery(serialized_row, extractor, table_name, id)
-        values = list(serialized_row.values()) + [id]
-        self.executeQuery(update_sql, values)
-
-    def updateLastSyncDate(self) -> None:
-        # Write current UTC time to txt file
-        with open('data/dwh/last_sync_date.txt', 'w') as f:
-            f.write(datetime.now(timezone.utc).isoformat())
-            # f.write(airtable_date_string.rstrip('Z'))
-
-    def getLastSyncDate(self) -> str|None:
+    def schemaGetDump(self, layer_name: str) -> str|None:
         try:
-            with open('data/dwh/last_sync_date.txt', 'r') as f:
-                return str(datetime.fromisoformat(f.read().strip()))
-        except (FileNotFoundError, ValueError):
-            return None
-        
-    def updateSchemaDefinitions(self, create_table_sql) -> None:
-        schema_path = config('data_warehouse.schema_path')
-        table_name_match = re.search(r'CREATE TABLE (IF NOT EXISTS )?(\w+)', create_table_sql, re.IGNORECASE)
-        
-        if not table_name_match:
-            raise ValueError("Invalid CREATE TABLE statement.")
-        
-        table_name = table_name_match.group(2)
-        
-        if os.path.exists(schema_path):
-            with open(schema_path, 'r') as f:
-                schema_content = f.read()
-        else:
-            schema_content = ""
-        
-        table_pattern = re.compile(rf'CREATE TABLE (IF NOT EXISTS )?{table_name} .*?;', re.DOTALL | re.IGNORECASE)
-        
-        if table_pattern.search(schema_content):
-            schema_content = table_pattern.sub(create_table_sql.strip() + ';', schema_content)
-        else:
-            schema_content += '\n\n' + create_table_sql.strip() + ';'
-        
-        with open(schema_path, 'w') as f:
-            f.write(schema_content)
-
-    def getSchemaDefinitions(self) -> str|None:
-        try:
-            with open(config('data_warehouse.schema_path'), 'r') as f:
+            file_path = self.schemaFilePath(layer_name)
+            with open(file_path, 'r') as f:
                 return f.read()
         except (FileNotFoundError, ValueError):
             return None
+        
+
+
+    ###########################################################################
+    # DATA SOURCES
+    ###########################################################################
+        
+    def generateSourceTableName(self, extractor: TabularDataExtractor, table_name: str) -> str:
+        return snake(extractor.NAME) + '__' + snake(table_name)
+
+
+    
+    ###########################################################################
+    # RAW (BRONZE) LAYER
+    ###########################################################################
+
+    def raw(self) -> DataWarehouseLayerScope:
+        return self._rawLayerScope
+    
+    ###########################################################################
+    # CLEAN (SILVER) LAYER
+    ###########################################################################
+
+    def clean(self) -> DataWarehouseLayerScope:
+        return self._cleanLayerScope
+
+    ###########################################################################
+    # BI (BUSINESS INTELLIGENCE, GOLD) LAYER
+    ###########################################################################
+
+    def BI(self) -> DataWarehouseLayerScope:
+        return self._BILayerScope
     

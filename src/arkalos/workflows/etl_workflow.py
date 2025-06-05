@@ -1,78 +1,74 @@
 
+import polars as pl
+
+from arkalos.core.dwh import DWH
+from arkalos.core.logger import log as Log
+from arkalos.utils.schema import get_data_schema
 from arkalos.data.extractors.data_extractor import TabularDataExtractor
 from arkalos.data.warehouse.data_warehouse import DataWarehouse
-from arkalos.core.dwh import dwh
-
 from arkalos.workflows.workflow import Workflow
+
+
 
 class ETLWorkflow(Workflow):
 
-    __extractor: TabularDataExtractor
-    __dwh: DataWarehouse
-    __tables: dict
+    _extractor: TabularDataExtractor
+    _dwh: DataWarehouse
+    _tables: dict
 
     def __init__(
         self, 
-        data_extractor_class: type[TabularDataExtractor], 
-        data_warehouse_class: type[DataWarehouse]|None = None
+        extractor: type[TabularDataExtractor], 
+        warehouse: type[DataWarehouse]|None = None
     ):
-        self.__extractor = data_extractor_class()
-        self.__dwh = data_warehouse_class() if data_warehouse_class is not None else dwh()
-        self.__tables = self.__extractor.TABLES
+        self._extractor = extractor()
+        self._dwh = warehouse() if warehouse is not None else DWH()
+        self._tables = self._extractor.TABLES
 
-    def __1fetchData(self, table_name: str):
-        print(f'1. Fetching data from source ({self.__extractor.NAME}) table "{table_name}"...')
-        data = self.__extractor.fetchAllData(table_name)
+    def _1fetchData(self, table_name: str) -> list[dict]:
+        Log.info(f'1. Fetching data from source ({self._extractor.NAME}) table "{table_name}"...')
+        data = self._extractor.fetchAllData(table_name)
         return data
 
-    def __2detectSchema(self, data):
-        print('2. Detecting schema...')
-        data_schema = self.__dwh.detectDataSchema(data)
+    def _2detectSchema(self, data: list[dict]) -> pl.Schema:
+        Log.info('2. Detecting schema...')
+        data_schema = get_data_schema(data)
         return data_schema
     
-    def __3createWhTable(self, table_name, data_schema, drop_table=False):
-        print(f'3. Creating a new table in destination warehouse "{self.__dwh.generateTableName(self.__extractor, table_name)}"...')
+    def _3createWhTable(self, table_name: str, data_schema: pl.Schema, drop_table: bool = False):
+        norm_table_name = self._dwh.generateSourceTableName(self._extractor, table_name)
+        Log.info(f'3. Creating a new table in the destination warehouse "{norm_table_name}"...')
         if (drop_table):
-            print('- Dropping table...')
-            self.__dwh.dropTable(self.__extractor, table_name)
-        self.__dwh.createTable(self.__extractor, table_name, data_schema)
+            Log.info('- Dropping table...')
+            self._dwh.raw().dropTable(norm_table_name)
+        self._dwh.raw().autoCreateTable(norm_table_name, data_schema)
 
-    def __4importDataIntoWh(self, table_name, data_schema, data):
-        print('4. Importing data into a warehouse...')
-        self.__dwh.importData(self.__extractor, table_name, data_schema, data)
+    def _4importDataIntoWh(self, table_name: str, data: list[dict]):
+        norm_table_name = self._dwh.generateSourceTableName(self._extractor, table_name)
+        Log.info('4. Importing data into a warehouse...')
+        self._dwh.raw().insertMultiple(norm_table_name, data)
         print()
 
-    def __runSingleTable(self, table_name, drop_table=False):
-        data = self.__1fetchData(table_name)
-        data_schema = self.__2detectSchema(data)
-        self.__3createWhTable(table_name, data_schema, drop_table)
-        self.__4importDataIntoWh(table_name, data_schema, data)
+    def _runSingleTable(self, table_name: str, drop_table: bool = False):
+        data = self._1fetchData(table_name)
+        data_schema = self._2detectSchema(data)
+        self._3createWhTable(table_name, data_schema, drop_table)
+        self._4importDataIntoWh(table_name, data)
 
-    def __runStartMessage(self):
-        print()
-        print(f'Start Syncing Data Source ({self.__extractor.NAME}) with Data Warehouse ({self.__dwh.NAME})...')
-        print()
 
-    def __runEndMessage(self):
-        print('DONE.')
-        print()
+    def onBeforeRun(self):
+        cls_name = self._dwh.__class__.__name__
+        engine = self._dwh.getEngineName()
+        db = self._dwh.getDatabaseName()
+        Log.info(f'Connection Class: {cls_name} | Engine: {engine} | Database: {db}')
+        self._dwh.connect()
 
-    def __error(self, message):
-        RED = '\033[31m'
-        RESET = '\033[0m'  # Reset to default color
-        print(f"{RED}ERROR: {message}{RESET}")
+    def onAfterRun(self):
+        self._dwh.disconnect()
 
     def run(self, drop_tables=False):
+        Log.info(f'Start Syncing Data Source ({self._extractor.NAME}) into the Data Warehouse...')
+        print()
+        for table in self._tables:
+            self._runSingleTable(table['name'], drop_tables)
 
-        try:
-            self.__runStartMessage()
-            self.__dwh.connect()
-            self.__dwh.updateLastSyncDate()
-
-            for table in self.__tables:
-                self.__runSingleTable(table['name'], drop_tables)
-
-            self.__dwh.disconnect()
-            self.__runEndMessage()
-        except Exception as e:
-            self.__error(e)

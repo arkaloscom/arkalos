@@ -1,6 +1,6 @@
 import re
 
-from arkalos import dwh, config
+from arkalos import DWH, config
 from arkalos.ai import AIAction
 
 
@@ -18,15 +18,29 @@ class TextToSQLAction(AIAction):
         raise Exception('TextToSQLTask.extractSQLFromMessage: SQL not found in the message.')
 
     async def run(self, message) -> str:
-        warehouse_schema = dwh().getSchemaDefinitions()
+        warehouse_schema = DWH().schemaGetDump(DWH().raw().layerName())
         prompt = f"""
             ### Instructions:
-            Your task is to convert a question into a SQL query, given SQLite database schema.
+            Your task is to convert a question into a SQL query, given {DWH().getEngineName()} database schema.
             
             Go through the question and database schema word by word.
 
+            There are 3 layers (databases). Each table name always must be prefixed with one of them:
+            - raw
+            - clean
+            - bi
+
+            Use this DB dialect and engine: {DWH().getEngineName()}
+
+            For sqlite only, that shall include all the built-in and any other tables like 'sqlite_master'.
+            For sqlite only, to list all the tables, use the raw layer, i.e. law.sqlite_master.
+            For sqlite only, sqlite only has NULL, INTEGER, REAL, TEXT, BLOB types. It doesn't have many functions.
+            For duckdb, use main.duckdb_tables
+
             ### Input:
-            Generate a SQL query that answers the question `{message}`.
+            Generate a SQL query only without any comments, and that answers the question:
+            
+            `{message}`.
 
             This query will run on a database whose schema is represented in this string:
 

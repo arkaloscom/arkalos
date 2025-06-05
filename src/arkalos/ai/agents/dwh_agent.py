@@ -1,7 +1,7 @@
 from arkalos.ai import AIAgent
 from arkalos.ai import SearchDWHAction
 from arkalos.ai import TextToSQLAction
-from arkalos import dwh
+from arkalos import DWH
 
 class DWHAgent(AIAgent):
     
@@ -14,10 +14,10 @@ class DWHAgent(AIAgent):
     ]
     
     def setup(self) -> None:
-        dwh().connect()
+        DWH().connect()
     
     def cleanup(self) -> None:
-        dwh().disconnect()
+        DWH().disconnect()
 
     async def textToSQL(self, message: str) -> str:
         return await self.runAction(TextToSQLAction, message)

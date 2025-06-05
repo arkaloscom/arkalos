@@ -1,4 +1,8 @@
 
+from datetime import datetime
+
+import polars as pl
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
@@ -19,37 +23,39 @@ class DataExtractor(ABC):
 class UnstructuredDataExtractor(DataExtractor):
     pass
 
+
+
 class TabularDataExtractor(DataExtractor):
     
     CONFIG: DataExtractorConfig
     TABLES: dict
 
     @abstractmethod
-    def fetchSchema(self) -> None:
+    def fetchSchema(self, table_name: str) -> pl.Schema:
         pass
 
     @abstractmethod
-    def fetchAllData(self, table_name) -> None:
+    def fetchAllData(self, table_name: str) -> list[dict]:
         pass
 
     @abstractmethod
-    def transformRow(self, data) -> None:
+    def transformRow(self, data: dict) -> dict:
         pass
 
     @abstractmethod
-    def fetchUpdatedData(self, table_name, last_sync_date) -> None:
+    def fetchUpdatedData(self, table_name: str, last_sync_date: datetime) -> list[dict]:
         pass
 
     @abstractmethod
-    def fetchAllIDs(self, table_name, column_name = None) -> None:
+    def fetchAllIDs(self, table_name: str, column_name: str) -> list:
         pass
 
 
 
-    def transformData(self, data):
+    def transformData(self, data) -> list[dict]:
         return [self.transformRow(row) for row in data]
         
-    def getTableIdByName(self, table_name) -> str|None:
+    def getTableIdByName(self, table_name: str) -> str|None:
         for table in self.TABLES:
             if table['name'] == table_name:
                 return str(table['id'])

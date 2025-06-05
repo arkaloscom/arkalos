@@ -1,4 +1,4 @@
-# Arkalos Beta 6 - The Python Framework for AI & Data Artisans
+# Arkalos Beta 7 - The Python Framework for AI & Data Artisans
 
 [![PyPI version](https://img.shields.io/pypi/v/arkalos)](https://pypi.org/project/arkalos/)
 [![PyPI Downloads](https://static.pepy.tech/badge/arkalos)](https://pepy.tech/projects/arkalos)
@@ -117,6 +117,32 @@ ca.createDendrogram()
 ```
 
 <img src="https://arkalos.com/assets/img/altair_dendrogram_python_arkalos.svg" alt="Altair Dendrogram example in Python Arkalos">
+
+
+
+## Database & Data Warehouse Migrations
+
+```python
+class Migration(DatabaseMigration):
+    
+    def up(self):
+
+        with DB().createTable('users') as table:
+            table.col('id').id()
+            table.col('name').string(64).notNull()
+            table.col('email').string().notNull()
+            table.col('is_admin').boolean().notNull().default('FALSE')
+            table.col('created_at').datetime().notNull().defaultNow()
+            table.col('updated_at').datetime().notNull().defaultNow()
+            table.indexUnique('email')
+
+
+
+    def down(self):
+        DB().dropTable('users')
+```
+
+
 
 ## Free Built-In Data Warehouse and Integrations
 

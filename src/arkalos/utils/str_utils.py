@@ -5,10 +5,19 @@ import re
 
 def snake(string: str) -> str:
     '''
-    Convert camelCase or PascalCase to snake_case.
+    Convert camelCase or PascalCase or other string to snake_case.
     Insert underscore before uppercase letters and lowercase the result.
     '''
-    string = string.strip().replace(' ', '_')
+    # Count leading underscores before processing
+    leading_underscores = len(string) - len(string.lstrip('_'))
+    
+    string = (string.strip()
+        .replace(' ', '_')
+        .replace('-', '_')
+        .replace('.', '_')
+        .replace('/', '_')
+        .replace('\\', '_')
+    )
     
     parts = string.split('_')
     processed_parts = []
@@ -16,7 +25,7 @@ def snake(string: str) -> str:
     for part in parts:
         if not part:
             continue
-        # Step 3: Insert underscores between lowercase-uppercase and uppercase-uppercase-lowercase transitions
+        # Insert underscores between lowercase-uppercase and uppercase-uppercase-lowercase transitions
         processed = re.sub(
             r'(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])', 
             '_', 
@@ -24,7 +33,10 @@ def snake(string: str) -> str:
         )
         processed_parts.append(processed.lower())
 
-    return '_'.join(processed_parts)
+    result = '_'.join(processed_parts)
+    
+    # Restore leading underscores
+    return '_' * leading_underscores + result
 
 
 

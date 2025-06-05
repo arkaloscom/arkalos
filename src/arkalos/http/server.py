@@ -13,7 +13,8 @@ from arkalos.core.bootstrap import bootstrap
 from arkalos.core.config import config
 from arkalos.core.path import base_path
 from arkalos.core.logger import log as Log
-from arkalos.core.dwh import dwh
+from arkalos.core.dwh import DWH
+from arkalos.core.db import DB
 
 from arkalos.http.app import HTTPApp
 from arkalos.http.response import response
@@ -129,10 +130,12 @@ class HTTPServer:
         self.onServerStop()
 
     def onServerStart(self):
-        dwh().connect()
+        DB().connect()
+        DWH().connect()
 
     def onServerStop(self):
-        dwh().disconnect()
+        DB().disconnect()
+        DWH().disconnect()
 
     def run(self, host: str = '127.0.0.1', port: int = 8000, reload: bool = False, workers: int = 1):
         try:

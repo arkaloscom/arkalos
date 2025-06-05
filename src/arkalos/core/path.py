@@ -44,6 +44,16 @@ def drive_path(path: str|None = None) -> str:
         dir = dir + os.sep + path
     return base_path(dir)
 
+def migration_path(version: str|None = None, warehouse: bool = False):
+    folder = 'dwh' if warehouse else 'db' 
+    path = f'app/schema/migrations/{folder}'
+    if version:
+        version = version.replace('.', '_')
+        if not version.startswith('v'):
+            version = 'v' + version
+        path = path + '/' + version
+    return base_path(path)
+
 def arkalos_path(path: str|None = None) -> str:
     '''Get a path relative to installed arkalos package root inside site-packages.'''
     this_files_dir = Path(__file__).parent.resolve()

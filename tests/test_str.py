@@ -14,6 +14,9 @@ from arkalos.utils import strx
         ('HTTPRequest', 'http_request'),
         ('HTTP_Request', 'http_request'),
         ('HTTP__Request', 'http_request'),
+        ('_ProductId', '_product_id'),
+        ('__ProductId', '__product_id'),
+        ('__id', '__id')
     ]
 )
 def test_str_snake_case(input_str, expected):
