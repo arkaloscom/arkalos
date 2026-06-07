@@ -32,6 +32,9 @@ from arkalos.schema.types.data_input_type import (
     input_to_df,
     input_or_first_row_to_class
 )
+from arkalos.data.database.ibis.duckdb_backend import ArkalosDuckDBBackend
+from arkalos.data.database.db_client import DBCursor
+
 
 
 class DatabaseType(StrEnum):
@@ -45,7 +48,6 @@ class Database:
     TYPE: DatabaseType = DatabaseType.DATABASE
 
     _connection: ibis.BaseBackend|None
-    _cursor: sqlite3.Cursor|duckdb.DuckDBPyConnection|None
 
     _engine: str
     _filePath: str
@@ -59,7 +61,6 @@ class Database:
 
     def __init__(self) -> None:
         self._connection = None
-        self._cursor = None
         self._engine = str(config('database.engine')).lower()
         self._host = str(config('database.host')).lower()
         self._port = str(config('database.port')).lower()
@@ -83,7 +84,7 @@ class Database:
 
     def getCredentialsLine(self) -> str:
         if self._engine in ('sqlite', 'duckdb'):
-            return f'{self._engine}:///{base_path(self._filePath)}'
+            return base_path(self._filePath)
 
         return f'{self._engine}://{self._username}:{self._password}@{self._host}:{self._port}/{self._database}'
     
@@ -112,8 +113,16 @@ class Database:
         if self._connection is None:
             self._logConnecting()
             self.onBeforeConnect()
-            self._connection = ibis.connect(creds)
-            self._cursor = self._connection.con.cursor()
+            if self._engine == 'duckdb':
+                con = ArkalosDuckDBBackend().connect(creds)
+                ibis.set_backend(con)
+                self._connection = con
+            elif self._engine == 'sqlite':
+                con = ibis.sqlite.connect(creds)
+                ibis.set_backend(con)
+                self._connection = con
+            else:
+                self._connection = ibis.connect(creds)
             self.onAfterConnected()
 
     def disconnect(self) -> None:
@@ -123,7 +132,6 @@ class Database:
             self._connection.disconnect()
             self.onAfterDisconnected()
             self._connection = None
-            self._cursor = None
 
     def onBeforeConnect(self) -> None:
         pass
@@ -228,28 +236,28 @@ class Database:
     def executeSql(self, sql: str, select: bool = False) -> pl.DataFrame|None:
         if self._connection is None:
             raise self._notConnectedError()
-        if self._cursor is None:
-            raise self._notConnectedError()
         
         self._logQuery(sql)
 
-        self._cursor.execute(sql)
+        cursor = self._connection.con.execute(sql)
         df = None
         if select:
-            if self._engine == 'sqlite' and isinstance(self._cursor, sqlite3.Cursor):
-                column_names = [description[0] for description in self._cursor.description]
-                rows = self._cursor.fetchall()
+            if self._engine == 'sqlite' and isinstance(cursor, sqlite3.Cursor):
+                column_names = [description[0] for description in cursor.description]
+                rows = cursor.fetchall()
                 data_for_polars = [tuple(row) for row in rows]
                 if not data_for_polars:
                     df = pl.DataFrame({}, schema={name: pl.Object for name in column_names})
                 else:
                     df = pl.DataFrame(data_for_polars, schema=column_names)
-            elif self._engine == 'duckdb' and isinstance(self._cursor, duckdb.DuckDBPyConnection):
-                return self._cursor.pl()
+            elif self._engine == 'duckdb' and isinstance(cursor, (duckdb.DuckDBPyConnection|DBCursor)):
+                return cursor.pl()
             else:
                 raise RuntimeError("Database.executeSql(): Invalid cursor type")
 
-        self._connection.con.commit()
+        if self._engine == 'sqlite':
+            self._connection.con.commit()
+
         return df
 
 
